@@ -1,0 +1,41 @@
+<view class="container">
+  <view class="profile-header">
+    <view class="avatar">
+      <open-data type="userAvatarUrl"></open-data>
+    </view>
+    <view class="user-info">
+      <view class="nickname">
+        <open-data type="userNickName"></open-data>
+      </view>
+      <view class="phone" wx:if="{{userInfo.phone}}">{{userInfo.phone}}</view>
+    </view>
+  </view>
+
+  <view class="menu-list">
+    <view class="menu-item">
+      <view class="menu-left">
+        <view class="menu-icon icon-user">👤</view>
+        <text class="menu-label">姓名</text>
+      </view>
+      <text class="menu-value">{{userInfo.username || '-'}}</text>
+    </view>
+    <view class="menu-item">
+      <view class="menu-left">
+        <view class="menu-icon icon-role">🛡️</view>
+        <text class="menu-label">角色</text>
+      </view>
+      <text class="menu-value">{{userInfo.role === 1 ? '经纪人' : '管理员'}}</text>
+    </view>
+    <view class="menu-item">
+      <view class="menu-left">
+        <view class="menu-icon icon-status">📊</view>
+        <text class="menu-label">状态</text>
+      </view>
+      <text class="menu-value {{userInfo.status === 1 ? 'enabled' : 'disabled'}}">
+        {{userInfo.status === 1 ? '正常' : '禁用'}}
+      </text>
+    </view>
+  </view>
+
+  <button class="logout-btn btn-danger" bindtap="logout">退出登录</button>
+</view>

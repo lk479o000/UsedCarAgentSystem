@@ -1,0 +1,54 @@
+<view class="container">
+  <!-- 统计卡片 -->
+  <view class="stats-grid">
+    <view class="stat-card" wx:for="{{statsList}}" wx:key="key">
+      <view class="stat-icon {{item.iconClass}}">
+        <text>{{item.icon}}</text>
+      </view>
+      <view class="stat-value">{{item.value}}</view>
+      <view class="stat-label">{{item.title}}</view>
+    </view>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="quick-actions">
+    <view class="section-title">快捷入口</view>
+    <view class="action-grid">
+      <view class="action-item" bindtap="navigateTo" data-url="/pages/leads/leads">
+        <view class="action-icon blue">📋</view>
+        <text class="action-label">线索管理</text>
+      </view>
+      <view class="action-item" bindtap="navigateTo" data-url="/pages/settlements/settlements">
+        <view class="action-icon green">💰</view>
+        <text class="action-label">结算管理</text>
+      </view>
+      <view class="action-item" bindtap="navigateTo" data-url="/pages/profile/profile">
+        <view class="action-icon orange">👤</view>
+        <text class="action-label">个人中心</text>
+      </view>
+      <view class="action-item" bindtap="refreshData">
+        <view class="action-icon red">🔄</view>
+        <text class="action-label">刷新数据</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近线索 -->
+  <view class="recent-section">
+    <view class="section-title">最近线索</view>
+    <view wx:if="{{recentLeads.length > 0}}">
+      <view class="lead-item" wx:for="{{recentLeads}}" wx:key="id">
+        <view class="lead-avatar">{{item.customerName.charAt(0)}}</view>
+        <view class="lead-info">
+          <view class="lead-name">{{item.customerName}}</view>
+          <view class="lead-car">{{item.carBrand}} {{item.carModel}}</view>
+        </view>
+        <view class="lead-status tag-{{item.statusType}}">{{item.statusText}}</view>
+      </view>
+    </view>
+    <view wx:else class="empty">
+      <text class="empty-icon">📭</text>
+      <text>暂无线索</text>
+    </view>
+  </view>
+</view>

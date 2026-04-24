@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ========== CSS 变量系统 ========== */
+:root {
+  --primary: #0EA5E9;
+  --primary-light: #38BDF8;
+  --primary-dark: #0369A1;
+  --primary-gradient: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%);
+  --success: #14B8A6;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #3B82F6;
+  --background: #F1F5F9;
+  --surface: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --border: #E2E8F0;
+  --highlight: #22D3EE;
+  --accent: #06B6D4;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+  --shadow-glow: 0 0 20px rgba(14, 165, 233, 0.3);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 48px;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+page {
+  font-family: var(--font-family);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text-primary);
+  background-color: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========== 排版系统 ========== */
+h1, .h1 {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 44px;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+
+h2, .h2 {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 36px;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+
+h3, .h3 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+
+p, .body {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--text-secondary);
+  letter-spacing: 0;
+}
+
+.small {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+
+.text-uppercase {
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ========== 动画效果 ========== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(14, 165, 233, 0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* ========== 滚动条样式 ========== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ========== 响应式设计 ========== */
+@media (max-width: 768px) {
+  h1, .h1 {
+    font-size: 28px;
+    line-height: 36px;
+  }
+  h2, .h2 {
+    font-size: 22px;
+    line-height: 30px;
+  }
+  h3, .h3 {
+    font-size: 18px;
+    line-height: 26px;
+  }
+}

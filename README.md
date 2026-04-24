@@ -22,12 +22,22 @@
 ## 项目结构
 
 ```
-car-broker-leads/
+UsedCarAgentSystem/
 ├── ucar-api/             # 管理和微信小程序后台服务
 ├── ucar-admin-web/       # 管理后台前端
 ├── ucar-miniapp/         # 微信小程序端
 ├── doc/                  # 项目文档
+│   ├── 1. 需求说明书.md
+│   ├── 2. rules.md
+│   ├── 3. database-schema.md
+│   ├── 4. api-spec.md
+│   ├── 5. ui-ux.md
+│   ├── 6. test-case.md
+│   ├── 7. deploy.md
+│   └── 8. skill.md
 ├── sql/                  # SQL文件
+│   ├── 初始化码表.sql
+│   └── 常用sql.sql
 ├── .gitignore            # Git忽略文件
 └── README.md             # 项目说明
 ```

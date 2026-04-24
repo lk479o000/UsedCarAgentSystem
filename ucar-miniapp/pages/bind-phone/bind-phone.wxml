@@ -1,0 +1,40 @@
+<view class="container fade-in">
+  <view class="header">
+    <view class="bind-icon">📱</view>
+    <view class="title">绑定手机号</view>
+    <view class="subtitle">请绑定您的手机号以继续使用</view>
+  </view>
+
+  <view class="form">
+    <view class="form-item">
+      <text class="label">手机号</text>
+      <input
+        type="number"
+        placeholder="请输入手机号"
+        maxlength="11"
+        value="{{phone}}"
+        bindinput="onPhoneInput"
+        class="form-input"
+      />
+    </view>
+    <view class="form-item">
+      <text class="label">昵称</text>
+      <input
+        type="text"
+        placeholder="请输入昵称（可选）"
+        value="{{nickname}}"
+        bindinput="onNicknameInput"
+        class="form-input"
+      />
+    </view>
+  </view>
+
+  <button
+    class="bind-btn btn-primary"
+    type="primary"
+    loading="{{loading}}"
+    bindtap="handleBind"
+  >
+    绑定手机号
+  </button>
+</view>

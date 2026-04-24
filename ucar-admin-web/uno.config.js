@@ -1,0 +1,71 @@
+import { defineConfig, presetUno, presetAttributify, presetIcons } from 'unocss'
+
+export default defineConfig({
+  presets: [
+    presetUno(),
+    presetAttributify(),
+    presetIcons({
+      scale: 1.2,
+      warn: true,
+    }),
+  ],
+  theme: {
+    colors: {
+      primary: {
+        DEFAULT: '#0EA5E9',
+        light: '#38BDF8',
+        dark: '#0369A1',
+      },
+      success: '#14B8A6',
+      warning: '#F59E0B',
+      danger: '#EF4444',
+      info: '#3B82F6',
+      background: '#F1F5F9',
+      surface: '#FFFFFF',
+      'text-primary': '#0F172A',
+      'text-secondary': '#475569',
+      border: '#E2E8F0',
+      highlight: '#22D3EE',
+      accent: '#06B6D4',
+    },
+    fontFamily: {
+      sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+    },
+    borderRadius: {
+      sm: '8px',
+      md: '12px',
+      lg: '16px',
+      xl: '24px',
+      full: '9999px',
+    },
+    boxShadow: {
+      sm: '0 1px 2px rgba(0,0,0,0.05)',
+      md: '0 4px 6px rgba(0,0,0,0.1)',
+      lg: '0 10px 15px rgba(0,0,0,0.15)',
+      glow: '0 0 20px rgba(14, 165, 233, 0.3)',
+    },
+  },
+  shortcuts: {
+    'btn-primary': 'bg-gradient-to-br from-primary to-primary-light text-white rounded-md px-5 py-2 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-96 transition-all duration-300 cursor-pointer border-none',
+    'btn-success': 'bg-gradient-to-br from-success to-highlight text-white rounded-md px-5 py-2 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-96 transition-all duration-300 cursor-pointer border-none',
+    'btn-danger': 'bg-gradient-to-br from-danger to-red-400 text-white rounded-md px-5 py-2 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-96 transition-all duration-300 cursor-pointer border-none',
+    'btn-warning': 'bg-gradient-to-br from-warning to-amber-300 text-white rounded-md px-5 py-2 font-medium shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-96 transition-all duration-300 cursor-pointer border-none',
+    'btn-ghost': 'bg-transparent text-primary hover:bg-primary/10 rounded-md px-5 py-2 font-medium transition-all duration-300 cursor-pointer border-none',
+    'card': 'bg-surface rounded-lg shadow-md border border-border overflow-hidden relative transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5',
+    'card-glass': 'bg-white/95 backdrop-blur-xl rounded-lg shadow-lg border border-white/30 overflow-hidden',
+    'input-glow': 'w-full border border-border rounded-md px-3 py-2 transition-all duration-300 focus:border-primary focus:shadow-[0_0_0_3px_rgba(14,165,233,0.15),0_0_20px_rgba(14,165,233,0.1)] outline-none text-text-primary',
+    'tag-primary': 'inline-flex items-center gap-1.5 bg-primary/10 text-primary-dark border border-primary/20 rounded-sm px-2.5 py-1 text-xs font-medium',
+    'tag-success': 'inline-flex items-center gap-1.5 bg-success/10 text-teal-700 border border-success/20 rounded-sm px-2.5 py-1 text-xs font-medium',
+    'tag-warning': 'inline-flex items-center gap-1.5 bg-warning/10 text-amber-700 border border-warning/20 rounded-sm px-2.5 py-1 text-xs font-medium',
+    'tag-danger': 'inline-flex items-center gap-1.5 bg-danger/10 text-red-700 border border-danger/20 rounded-sm px-2.5 py-1 text-xs font-medium',
+    'tag-info': 'inline-flex items-center gap-1.5 bg-info/10 text-blue-700 border border-info/20 rounded-sm px-2.5 py-1 text-xs font-medium',
+    'table-header': 'bg-gradient-to-b from-[#f1f5f9] to-[#e2e8f0] font-bold text-sm text-text-primary border-b-2 border-border px-4 py-3 text-left',
+    'table-cell': 'px-4 py-3 text-sm text-text-secondary border-b border-border',
+    'table-row-even': 'bg-slate-50',
+    'table-row-hover': 'hover:bg-primary/8 transition-colors duration-300 cursor-pointer',
+    'form-label': 'block text-sm font-medium text-text-primary mb-1.5',
+    'page-container': 'min-h-screen bg-background font-sans',
+    'fade-in': 'animate-fade-in',
+  },
+  rules: [],
+})

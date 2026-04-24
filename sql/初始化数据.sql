@@ -1,17 +1,13 @@
--- 初始化码表/字典表
--- 创建c_dict表
-CREATE TABLE IF NOT EXISTS c_dict (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  dict_type VARCHAR(50) NOT NULL,
-  dict_code TINYINT NOT NULL,
-  dict_name VARCHAR(50) NOT NULL,
-  dict_desc VARCHAR(100),
-  sort_order TINYINT NOT NULL DEFAULT 0,
-  status TINYINT NOT NULL DEFAULT 1,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uk_dict_type_code (dict_type, dict_code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- --------------- 初始用户表 -----------------
+
+-- 插入管理员账号
+INSERT INTO c_user (userid, username, password, password_secure, phone, role, status, nickname) VALUES
+('admin', 'admin', '$2a$10$9klY3I4PXOt6BrFNyq94BO/2tV2zoql3EzWJD7tnvECJ0XTkpQjzi', 'cS+RP79J0t00upQQCSTqLQ8onqlABY6UeMR7C+W7Z8ppWnPLTG/zelMMrvBLEDF1pG5znRPm1V/PMEbCJjMj2kzjeWcd93888w2b0eFWqNia2h2xVsdWRY6RpUdHDWryisyVS3YDmZOlz/09sPtaD7fqjbh5wOSlBrDKuK7P7vnlGEhVv/aWUqHawwMaPq94TbZSs4TQgaUtvzhUfwHF1Nl2blFQpY4D51L413e3by3BVgS72OEO3jQR5RrbVihZLLPQByzPc0LTUAPJuiKwZ2KwoAt33bbRS1j6axeNBl4ujPvtO6h7BU4G+6vKruQzxuxEAOm9D5PrU72/n4XMQA==', '18140099917', 0, 1, '系统管理员');
+
+-- --------------- 初始用户表 -----------------
+
+
+-- --------------- 初始化码表/字典表 -----------------
 
 -- 插入用户角色数据
 INSERT INTO c_dict (dict_type, dict_code, dict_name, dict_desc, sort_order) VALUES
@@ -75,3 +71,5 @@ SELECT DISTINCT dict_type FROM c_dict WHERE status = 1;
 
 -- 6. 根据字典类型查询所有字典数据
 SELECT dict_code, dict_name, dict_desc FROM c_dict WHERE dict_type = ? AND status = 1 ORDER BY sort_order;
+
+-- --------------- 初始化码表/字典表 -----------------

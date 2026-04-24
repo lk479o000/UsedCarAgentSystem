@@ -1,0 +1,52 @@
+<view class="container">
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <view class="filter-item {{filterStatus === '' ? 'active' : ''}}" bindtap="changeFilter" data-status="">全部</view>
+    <view class="filter-item {{filterStatus === '0' ? 'active' : ''}}" bindtap="changeFilter" data-status="0">待结算</view>
+    <view class="filter-item {{filterStatus === '1' ? 'active' : ''}}" bindtap="changeFilter" data-status="1">已结算</view>
+  </view>
+
+  <!-- 结算列表 -->
+  <view class="settlement-list" wx:if="{{settlements.length > 0}}">
+    <view class="settlement-card" wx:for="{{settlements}}" wx:key="id">
+      <view class="settlement-header">
+        <view class="customer-wrap">
+          <text class="customer-name">{{item.lead.customerName}}</text>
+          <view class="settlement-status tag-{{item.status === 1 ? 'success' : 'warning'}}">{{item.status === 1 ? '已结算' : '待结算'}}</view>
+        </view>
+      </view>
+
+      <view class="car-info">
+        <text class="car-label">{{item.lead.carBrand}}</text>
+        <text class="car-value">{{item.lead.carModel}}</text>
+      </view>
+
+      <view class="amount-row">
+        <view class="amount-item">
+          <text class="amount-label">利润</text>
+          <text class="amount-value">{{item.profit}}</text>
+        </view>
+        <view class="amount-divider"></view>
+        <view class="amount-item">
+          <text class="amount-label">经纪人分成</text>
+          <text class="amount-value highlight">{{item.agentShare}}</text>
+        </view>
+      </view>
+
+      <view class="settlement-time" wx:if="{{item.settledAt}}">
+        <text class="time-icon">📅</text>
+        <text>{{item.settledAt}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:else class="empty">
+    <text class="empty-icon">📭</text>
+    <text>暂无结算</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading" wx:if="{{loading && settlements.length > 0}}">加载中...</view>
+  <view class="no-more" wx:if="{{!hasMore && settlements.length > 0}}">没有更多了</view>
+</view>
