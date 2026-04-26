@@ -449,6 +449,56 @@ const changePassword = async (userId, oldPassword, newPassword) => {
   return { code: ERROR_CODES.SUCCESS, message: '密码修改成功' };
 };
 
+/**
+ * 解密微信手机号
+ */
+const decryptPhone = async (code, encryptedData, iv) => {
+  try {
+    const response = await axios.get('https://api.weixin.qq.com/sns/jscode2session', {
+      params: {
+        appid: process.env.WX_APPID,
+        secret: process.env.WX_SECRET,
+        js_code: code,
+        grant_type: 'authorization_code',
+      },
+    });
+
+    const { openid, session_key, errcode, errmsg } = response.data;
+
+    if (errcode) {
+      logger.error('微信登录失败:', errmsg);
+      return { code: ERROR_CODES.SYSTEM_ERROR, message: '微信登录失败' };
+    }
+
+    const crypto = require('crypto');
+    const sessionKey = Buffer.from(session_key, 'base64');
+    const encryptedBuffer = Buffer.from(encryptedData, 'base64');
+    const ivBuffer = Buffer.from(iv, 'base64');
+
+    const decipher = crypto.createDecipheriv('aes-128-cbc', sessionKey, ivBuffer);
+    decipher.setAutoPadding(true);
+    let decoded = decipher.update(encryptedBuffer, 'binary', 'utf8');
+    decoded += decipher.final('utf8');
+
+    const data = JSON.parse(decoded);
+    if (!data.phoneNumber) {
+      return { code: ERROR_CODES.PARAM_ERROR, message: '获取手机号失败' };
+    }
+
+    return {
+      code: ERROR_CODES.SUCCESS,
+      data: {
+        phoneNumber: data.phoneNumber,
+        purePhoneNumber: data.purePhoneNumber,
+        countryCode: data.countryCode,
+      },
+    };
+  } catch (err) {
+    logger.error('解密手机号异常:', err.message);
+    return { code: ERROR_CODES.SYSTEM_ERROR, message: '解密手机号失败' };
+  }
+};
+
 module.exports = {
   generateCaptcha,
   verifyCaptcha,
@@ -458,4 +508,5 @@ module.exports = {
   wechatLogin,
   bindPhone,
   changePassword,
+  decryptPhone,
 };

@@ -252,6 +252,10 @@ const settlementForm = reactive({ leadId: '', profit: 0, agentShare: 0, remark: 
 const formRules = {
   customerName: [{ required: true, message: '请输入客户姓名' }],
   customerPhone: [{ required: true, message: '请输入客户电话' }],
+  // customerPhone: [
+  //   { required: true, message: '请输入客户电话' },
+  //   { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的11位手机号' },
+  // ],
   carModel: [{ required: true, message: '请输入车辆型号' }],
   userId: [{ required: true, message: '请选择归属经纪人' }],
 }
@@ -353,10 +357,14 @@ const showAddDialog = () => {
 const handleSubmit = async () => {
   const valid = await formRef.value?.validate()
   if (!valid) return
-  await createLead(form)
-  Message.success('新增成功')
-  dialogVisible.value = false
-  loadData()
+  try {
+    await createLead(form)
+    Message.success('新增成功')
+    dialogVisible.value = false
+    loadData()
+  } catch (error) {
+    // 错误已经在request拦截器中处理，这里不需要重复处理
+  }
 }
 
 const handleUpdateStatus = (row) => {

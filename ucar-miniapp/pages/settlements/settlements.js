@@ -1,4 +1,5 @@
 const api = require('../../utils/api')
+const { checkLogin } = require('../../utils/auth')
 
 Page({
   data: {
@@ -11,7 +12,12 @@ Page({
   },
 
   onLoad() {
+    if (!checkLogin()) return
     this.loadData()
+  },
+
+  onShow() {
+    if (!checkLogin()) return
   },
 
   onPullDownRefresh() {

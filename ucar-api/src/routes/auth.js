@@ -4,7 +4,7 @@ const authService = require('../services/authService');
 const { success, error } = require('../utils/response');
 const { authMiddleware } = require('../middleware/auth');
 const { loginLimiter } = require('../middleware/rateLimiter');
-const { validate, loginSchema, passwordSchema, wechatLoginSchema, bindPhoneSchema } = require('../middleware/validation');
+const { validate, loginSchema, passwordSchema, wechatLoginSchema, bindPhoneSchema, decryptPhoneSchema } = require('../middleware/validation');
 
 /**
  * 获取验证码
@@ -87,6 +87,21 @@ router.put('/password', authMiddleware, validate(passwordSchema), async (req, re
   }
 });
 
-
+/**
+ * 解密微信手机号
+ * POST /api/v1/auth/decrypt-phone
+ */
+router.post('/decrypt-phone', validate(decryptPhoneSchema), async (req, res) => {
+  try {
+    const { code, encryptedData, iv } = req.body;
+    const result = await authService.decryptPhone(code, encryptedData, iv);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, result.data);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
 
 module.exports = router;

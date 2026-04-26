@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useUserStore } from '@/store/user'
 import { Message } from '@/composables/useMessage'
+import { getErrorMessage, getMessageType } from '@/utils/errorCode'
 
 const request = axios.create({
   baseURL: '/api/v1',
@@ -28,18 +29,25 @@ request.interceptors.response.use(
     }
     const res = response.data
     if (res.code !== 0) {
-      Message.error(res.message || '请求失败')
+      // 根据错误码获取错误消息和类型
+      const errorMessage = getErrorMessage(res.code, res.message || '请求失败')
+      const messageType = getMessageType(res.code)
+      Message[messageType](errorMessage)
+      
+      // 特殊处理：登录过期
       if (res.code === 2) {
         const userStore = useUserStore()
         userStore.logout()
         window.location.href = '/login'
       }
-      return Promise.reject(new Error(res.message))
+      return Promise.reject(new Error(errorMessage))
     }
     return res
   },
   (error) => {
-    Message.error(error.response?.data?.message || '网络错误')
+    // 网络错误处理
+    const errorMessage = error.response?.data?.message || error.message || '网络错误'
+    Message.error(errorMessage)
     return Promise.reject(error)
   }
 )

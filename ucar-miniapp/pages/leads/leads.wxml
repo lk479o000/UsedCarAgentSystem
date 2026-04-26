@@ -1,6 +1,6 @@
-<view class="container">
+<view class="page p-4">
   <!-- 筛选栏 -->
-  <view class="filter-bar">
+  <view class="filter-bar card-glass">
     <view class="filter-item {{filterStatus === '' ? 'active' : ''}}" bindtap="changeFilter" data-status="">全部</view>
     <view class="filter-item {{filterStatus === '0' ? 'active' : ''}}" bindtap="changeFilter" data-status="0">待跟进</view>
     <view class="filter-item {{filterStatus === '1' ? 'active' : ''}}" bindtap="changeFilter" data-status="1">跟进中</view>
@@ -9,7 +9,7 @@
 
   <!-- 线索列表 -->
   <view class="lead-list" wx:if="{{leads.length > 0}}">
-    <view class="lead-card" wx:for="{{leads}}" wx:key="id">
+    <view class="lead-card card-glass" wx:for="{{leads}}" wx:key="id">
       <view class="lead-header">
         <view class="customer-wrap">
           <text class="customer-name">{{item.customerName}}</text>

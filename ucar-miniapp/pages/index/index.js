@@ -1,4 +1,5 @@
 const app = getApp()
+const { checkLogin } = require('../../utils/auth')
 
 Page({
   data: {
@@ -13,11 +14,13 @@ Page({
   },
 
   onLoad() {
+    if (!checkLogin()) return
     this.loadStats()
     this.loadRecentLeads()
   },
 
   onShow() {
+    if (!checkLogin()) return
     this.loadStats()
     this.loadRecentLeads()
   },
@@ -33,7 +36,7 @@ Page({
     if (!token) return
 
     wx.request({
-      url: `${app.globalData.baseUrl}/api/v1/dashboard/stats`,
+      url: `${app.globalData.baseUrl}/api/v1/user/overview`,
       header: { Authorization: `Bearer ${token}` },
       success: (res) => {
         if (res.data.code === 0) {
@@ -57,7 +60,7 @@ Page({
     if (!token) return
 
     wx.request({
-      url: `${app.globalData.baseUrl}/api/v1/leads`,
+      url: `${app.globalData.baseUrl}/api/v1/user/lead`,
       header: { Authorization: `Bearer ${token}` },
       data: { page: 1, size: 5 },
       success: (res) => {

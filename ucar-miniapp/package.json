@@ -1,0 +1,19 @@
+{
+  "name": "ucar-miniapp",
+  "version": "1.0.0",
+  "description": "二手车经纪人系统微信小程序，为经纪人提供线索查询、结算查看和数据概览等功能。",
+  "main": "app.js",
+  "scripts": {
+    "unocss": "unocss --write --out-file unocss.wxss"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@iconify-json/lucide": "^1.2.103",
+    "@unocss/preset-icons": "^66.6.8",
+    "unocss": "^66.6.8",
+    "unocss-preset-weapp": "^66.0.2"
+  }
+}

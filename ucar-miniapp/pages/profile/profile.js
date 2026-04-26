@@ -1,9 +1,12 @@
+const { checkLogin } = require('../../utils/auth')
+
 Page({
   data: {
     userInfo: null,
   },
 
   onShow() {
+    if (!checkLogin()) return
     const userInfo = wx.getStorageSync('userInfo')
     if (userInfo) {
       this.setData({ userInfo: JSON.parse(userInfo) })
@@ -21,7 +24,7 @@ Page({
           wx.removeStorageSync('openid')
           wx.showToast({ title: '已退出', icon: 'success' })
           setTimeout(() => {
-            wx.reLaunch({ url: '/pages/index/index' })
+            wx.reLaunch({ url: '/pages/login/login' })
           }, 1000)
         }
       },

@@ -26,20 +26,25 @@
 
       <!-- 表格 -->
       <ULoading :loading="loading">
-        <UTable :data="tableData" :columns="columns">
+        <UTable :data="tableData" :columns="columns" @row-click="handleRowClick">
           <template #status="{ row }">
             <UTag :type="row.status === 1 ? 'success' : 'danger'">
               {{ row.status === 1 ? '启用' : '禁用' }}
             </UTag>
           </template>
           <template #action="{ row }">
-            <UButton
-              :type="row.status === 1 ? 'danger' : 'success'"
-              size="sm"
-              @click="handleToggleStatus(row)"
-            >
-              {{ row.status === 1 ? '禁用' : '启用' }}
-            </UButton>
+            <div class="flex gap-2">
+              <UButton
+                :type="row.status === 1 ? 'danger' : 'success'"
+                size="sm"
+                @click="handleToggleStatus(row)"
+              >
+                {{ row.status === 1 ? '禁用' : '启用' }}
+              </UButton>
+              <UButton type="primary" size="sm" @click="showEditDialog(row)">
+                编辑
+              </UButton>
+            </div>
           </template>
         </UTable>
       </ULoading>
@@ -67,7 +72,14 @@
           <UInput v-model="form.userid" placeholder="请输入账号" />
         </UFormItem>
         <UFormItem label="初始密码" prop="password">
-          <UInput v-model="form.password" type="password" placeholder="请输入初始密码" />
+          <UInput
+            v-model="form.password"
+            :type="showPassword ? 'text' : 'password'"
+            placeholder="请输入初始密码"
+            :suffix-icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+            :suffix-title="showPassword ? '屏蔽密码' : '将密码显示为纯文本。注意：这会将您的密码暴露在屏幕上。'"
+            @suffix-click="showPassword = !showPassword"
+          />
         </UFormItem>
       </UForm>
       <template #footer>
@@ -86,6 +98,63 @@
       type="warning"
       @confirm="confirmToggle"
     />
+
+    <!-- 详情对话框 -->
+    <UDialog v-model="detailDialogVisible" title="经纪人详情" width="500px">
+      <div class="space-y-4">
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">账号</span>
+          <span class="text-sm text-text-primary">{{ detailForm.userid }}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">姓名</span>
+          <span class="text-sm text-text-primary">{{ detailForm.username }}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">手机号</span>
+          <span class="text-sm text-text-primary">{{ detailForm.phone }}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">状态</span>
+          <UTag :type="detailForm.status === 1 ? 'success' : 'danger'">
+            {{ detailForm.status === 1 ? '启用' : '禁用' }}
+          </UTag>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">创建时间</span>
+          <span class="text-sm text-text-primary">{{ detailForm.createdAt }}</span>
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end">
+          <UButton type="primary" @click="detailDialogVisible = false">关闭</UButton>
+        </div>
+      </template>
+    </UDialog>
+
+    <!-- 编辑对话框 -->
+    <UDialog v-model="editDialogVisible" title="编辑经纪人" width="500px">
+      <UForm ref="editFormRef" :model="editForm" :rules="editFormRules">
+        <UFormItem label="账号" prop="userid">
+          <UInput v-model="editForm.userid" placeholder="请输入账号" disabled />
+        </UFormItem>
+        <UFormItem label="姓名" prop="username">
+          <UInput v-model="editForm.username" placeholder="请输入姓名" />
+        </UFormItem>
+        <UFormItem label="手机号" prop="phone">
+          <UInput v-model="editForm.phone" placeholder="请输入手机号" type="number" />
+        </UFormItem>
+        <UFormItem label="状态" prop="status">
+          <USelect v-model="editForm.status" :options="statusOptions" placeholder="请选择" />
+        </UFormItem>
+      </UForm>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton type="default" @click="editDialogVisible = false">取消</UButton>
+          <UButton type="primary" @click="handleEditSubmit">确定</UButton>
+        </div>
+      </template>
+    </UDialog>
   </div>
 </template>
 
@@ -109,15 +178,21 @@ import UConfirm from '@/components/UConfirm.vue'
 const loading = ref(false)
 const tableData = ref([])
 const dialogVisible = ref(false)
+const detailDialogVisible = ref(false)
+const editDialogVisible = ref(false)
 const toggleConfirmVisible = ref(false)
 const toggleAction = ref('')
 const currentRow = ref(null)
 const formRef = ref()
+const editFormRef = ref()
 
 const searchForm = reactive({ username: '', status: '' })
 const pagination = reactive({ page: 1, size: 20, total: 0 })
 
 const form = reactive({ userid: '', username: '', phone: '', password: '' })
+const detailForm = reactive({ userid: '', username: '', phone: '', status: 1, createdAt: '' })
+const editForm = reactive({ id: '', userid: '', username: '', phone: '', status: 1 })
+const showPassword = ref(false)
 
 const formRules = {
   userid: [{ required: true, message: '请输入账号' }],
@@ -127,6 +202,15 @@ const formRules = {
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的11位手机号' },
   ],
   password: [{ required: true, message: '请输入初始密码' }],
+}
+
+const editFormRules = {
+  username: [{ required: true, message: '请输入姓名' }],
+  phone: [
+    { required: true, message: '请输入手机号' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的11位手机号' },
+  ],
+  status: [{ required: true, message: '请选择状态' }],
 }
 
 const statusOptions = [
@@ -161,20 +245,25 @@ const handlePageChange = (page) => { pagination.page = page; loadData() }
 
 const showAddDialog = () => {
   Object.assign(form, { userid: '', username: '', phone: '', password: '123456' })
+  showPassword.value = false
   dialogVisible.value = true
 }
 
-const handlePhoneChange = (value) => {
-  form.userid = value
+const handlePhoneChange = (event) => {
+  form.userid = event.target.value
 }
 
 const handleSubmit = async () => {
   const valid = await formRef.value?.validate()
   if (!valid) return
-  await createUser(form)
-  Message.success('新增成功')
-  dialogVisible.value = false
-  loadData()
+  try {
+    await createUser(form)
+    Message.success('新增成功')
+    dialogVisible.value = false
+    loadData()
+  } catch (error) {
+    // 错误已经在request拦截器中处理，这里不需要重复处理
+  }
 }
 
 const handleToggleStatus = (row) => {
@@ -187,6 +276,29 @@ const confirmToggle = async () => {
   await updateUser(currentRow.value.id, { status: currentRow.value.status === 1 ? 0 : 1 })
   Message.success(`${toggleAction.value}成功`)
   loadData()
+}
+
+const handleRowClick = (row) => {
+  Object.assign(detailForm, row)
+  detailDialogVisible.value = true
+}
+
+const showEditDialog = (row) => {
+  Object.assign(editForm, row)
+  editDialogVisible.value = true
+}
+
+const handleEditSubmit = async () => {
+  const valid = await editFormRef.value?.validate()
+  if (!valid) return
+  try {
+    await updateUser(editForm.id, editForm)
+    Message.success('编辑成功')
+    editDialogVisible.value = false
+    loadData()
+  } catch (error) {
+    // 错误已经在request拦截器中处理，这里不需要重复处理
+  }
 }
 
 onMounted(() => { loadData() })

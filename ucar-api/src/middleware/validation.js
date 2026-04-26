@@ -90,6 +90,13 @@ const bindPhoneSchema = Joi.object({
   avatarUrl: Joi.string().max(255).allow(null, ''),
 });
 
+// 解密手机号校验schema
+const decryptPhoneSchema = Joi.object({
+  code: Joi.string().required(),
+  encryptedData: Joi.string().required(),
+  iv: Joi.string().required(),
+});
+
 module.exports = {
   validate,
   loginSchema,
@@ -101,4 +108,5 @@ module.exports = {
   createUserSchema,
   wechatLoginSchema,
   bindPhoneSchema,
+  decryptPhoneSchema,
 };

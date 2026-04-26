@@ -1,0 +1,49 @@
+<view class="page">
+  <view class="bg-decoration">
+    <view class="circle circle-1"></view>
+    <view class="circle circle-2"></view>
+    <view class="circle circle-3"></view>
+  </view>
+
+  <view class="login-header">
+    <view class="logo-wrapper">
+      <view class="logo">
+        <image src="/static/icons/car-front.svg" mode="widthFix" class="car-icon" />
+      </view>
+    </view>
+    <view class="title">二手车经纪人</view>
+    <view class="subtitle">登录后即可管理您的业务</view>
+  </view>
+
+  <view class="login-card">
+    <view class="section-title">欢迎登录</view>
+
+    <button
+      class="login-btn"
+      wx:if="{{!agreed}}"
+      bindtap="showAgreementTip"
+      loading="{{loading}}"
+    >
+      <view class="i-lucide-smartphone"></view>
+      微信一键登录
+    </button>
+    <button
+      class="login-btn"
+      wx:else
+      open-type="getPhoneNumber"
+      bind:getphonenumber="onPhoneLogin"
+      loading="{{loading}}"
+    >
+      <view class="i-lucide-smartphone"></view>
+      微信一键登录
+    </button>
+
+    <view class="agreement">
+      <checkbox checked="{{agreed}}" bindtap="toggleAgreement" class="agreement-checkbox" />
+      <text class="agreement-text">已阅读并同意</text>
+      <text class="agreement-link" bindtap="showAgreement">《用户协议》</text>
+      <text class="agreement-text">和</text>
+      <text class="agreement-link" bindtap="showPrivacy">《隐私政策》</text>
+    </view>
+  </view>
+</view>

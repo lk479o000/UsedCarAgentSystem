@@ -1,9 +1,9 @@
-<view class="container">
+<view class="page p-4">
   <!-- 统计卡片 -->
-  <view class="stats-grid">
-    <view class="stat-card" wx:for="{{statsList}}" wx:key="key">
+  <view class="grid grid-cols-2 gap-4">
+    <view class="card-glass stat-card" wx:for="{{statsList}}" wx:key="key">
       <view class="stat-icon {{item.iconClass}}">
-        <text>{{item.icon}}</text>
+        <view class="i-lucide-list"></view>
       </view>
       <view class="stat-value">{{item.value}}</view>
       <view class="stat-label">{{item.title}}</view>
@@ -11,30 +11,30 @@
   </view>
 
   <!-- 快捷入口 -->
-  <view class="quick-actions">
+  <view class="card-glass quick-actions">
     <view class="section-title">快捷入口</view>
     <view class="action-grid">
       <view class="action-item" bindtap="navigateTo" data-url="/pages/leads/leads">
-        <view class="action-icon blue">📋</view>
-        <text class="action-label">线索管理</text>
+        <view class="action-icon blue i-lucide-list"></view>
+        <text class="action-label">我的线索</text>
       </view>
       <view class="action-item" bindtap="navigateTo" data-url="/pages/settlements/settlements">
-        <view class="action-icon green">💰</view>
-        <text class="action-label">结算管理</text>
+        <view class="action-icon green i-lucide-wallet"></view>
+        <text class="action-label">我的结算</text>
       </view>
       <view class="action-item" bindtap="navigateTo" data-url="/pages/profile/profile">
-        <view class="action-icon orange">👤</view>
+        <view class="action-icon orange i-lucide-user"></view>
         <text class="action-label">个人中心</text>
       </view>
       <view class="action-item" bindtap="refreshData">
-        <view class="action-icon red">🔄</view>
+        <view class="action-icon red i-lucide-refresh-cw"></view>
         <text class="action-label">刷新数据</text>
       </view>
     </view>
   </view>
 
   <!-- 最近线索 -->
-  <view class="recent-section">
+  <view class="card-glass recent-section">
     <view class="section-title">最近线索</view>
     <view wx:if="{{recentLeads.length > 0}}">
       <view class="lead-item" wx:for="{{recentLeads}}" wx:key="id">

@@ -33,6 +33,7 @@
               index % 2 === 1 ? 'bg-[#f8fafc]' : 'bg-white',
               'hover:bg-primary/8 cursor-pointer',
             ]"
+            @click="handleRowClick(row)"
           >
             <td
               v-for="col in columns"
@@ -68,6 +69,8 @@ const props = defineProps({
   emptyText: { type: String, default: '无数据' },
 })
 
+const emit = defineEmits(['row-click'])
+
 const sortKey = ref('')
 const sortOrder = ref('')
 
@@ -90,6 +93,10 @@ const handleSort = (key) => {
     sortKey.value = key
     sortOrder.value = 'asc'
   }
+}
+
+const handleRowClick = (row) => {
+  emit('row-click', row)
 }
 
 const sortedData = computed(() => {

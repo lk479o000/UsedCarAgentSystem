@@ -1,6 +1,6 @@
-<view class="container">
+<view class="page p-4">
   <!-- 筛选栏 -->
-  <view class="filter-bar">
+  <view class="filter-bar card-glass">
     <view class="filter-item {{filterStatus === '' ? 'active' : ''}}" bindtap="changeFilter" data-status="">全部</view>
     <view class="filter-item {{filterStatus === '0' ? 'active' : ''}}" bindtap="changeFilter" data-status="0">待结算</view>
     <view class="filter-item {{filterStatus === '1' ? 'active' : ''}}" bindtap="changeFilter" data-status="1">已结算</view>
@@ -8,7 +8,7 @@
 
   <!-- 结算列表 -->
   <view class="settlement-list" wx:if="{{settlements.length > 0}}">
-    <view class="settlement-card" wx:for="{{settlements}}" wx:key="id">
+    <view class="settlement-card card-glass" wx:for="{{settlements}}" wx:key="id">
       <view class="settlement-header">
         <view class="customer-wrap">
           <text class="customer-name">{{item.lead.customerName}}</text>

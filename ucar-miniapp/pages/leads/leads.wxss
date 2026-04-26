@@ -3,7 +3,7 @@ page {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
 }
 
-.container {
+.page {
   padding: 24rpx;
   animation: fadeIn 0.4s ease-out;
 }
@@ -16,12 +16,8 @@ page {
 /* 筛选栏 */
 .filter-bar {
   display: flex;
-  background: #FFFFFF;
-  border-radius: 32rpx;
   padding: 12rpx;
   margin-bottom: 24rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  border: 1rpx solid #E2E8F0;
 }
 
 .filter-item {
@@ -47,17 +43,14 @@ page {
 }
 
 .lead-card {
-  background: #FFFFFF;
-  border-radius: 32rpx;
   padding: 32rpx;
   margin-bottom: 24rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  border: 1rpx solid #E2E8F0;
   transition: all 0.3s ease;
 }
 
 .lead-card:active {
   transform: scale(0.98);
+  box-shadow: 0 8rpx 24rpx rgba(14, 165, 233, 0.15);
 }
 
 .lead-header {
@@ -119,15 +112,15 @@ page {
   align-items: center;
   gap: 12rpx;
   padding: 20rpx 0;
-  border-top: 1rpx solid #E2E8F0;
-  border-bottom: 1rpx solid #E2E8F0;
+  border-top: 1rpx solid rgba(226, 232, 240, 0.5);
+  border-bottom: 1rpx solid rgba(226, 232, 240, 0.5);
   margin-bottom: 20rpx;
 }
 
 .car-label {
   font-size: 24rpx;
   color: #94A3B8;
-  background: #F1F5F9;
+  background: rgba(241, 245, 249, 0.8);
   padding: 6rpx 16rpx;
   border-radius: 12rpx;
   font-weight: 500;

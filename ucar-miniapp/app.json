@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/login/login",
     "pages/index/index",
     "pages/leads/leads",
     "pages/settlements/settlements",
@@ -20,27 +21,19 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页",
-        "iconPath": "images/home.png",
-        "selectedIconPath": "images/home-active.png"
+        "text": "首页"
       },
       {
         "pagePath": "pages/leads/leads",
-        "text": "线索",
-        "iconPath": "images/list.png",
-        "selectedIconPath": "images/list-active.png"
+        "text": "线索"
       },
       {
         "pagePath": "pages/settlements/settlements",
-        "text": "结算",
-        "iconPath": "images/money.png",
-        "selectedIconPath": "images/money-active.png"
+        "text": "结算"
       },
       {
         "pagePath": "pages/profile/profile",
-        "text": "我的",
-        "iconPath": "images/user.png",
-        "selectedIconPath": "images/user-active.png"
+        "text": "我的"
       }
     ]
   },

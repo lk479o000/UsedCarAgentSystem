@@ -1,9 +1,8 @@
 const request = require('./request')
 
 module.exports = {
-  // 登录
-  login: (code) => request.post('/auth/login/wechat', { code }),
-  bindPhone: (data) => request.post('/auth/bind-phone', data),
+  // 登录（一键登录：code + encryptedData + iv）
+  login: (data) => request.post('/auth/login/wechat', data),
 
   // 概览
   getOverview: () => request.get('/user/overview'),
