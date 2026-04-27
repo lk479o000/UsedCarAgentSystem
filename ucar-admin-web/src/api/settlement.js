@@ -22,3 +22,7 @@ export const exportSettlements = (params) => {
     responseType: 'blob',
   })
 }
+
+export const getSettlementByLeadId = (leadId) => {
+  return request.get(`/settlement/lead/${leadId}`)
+}

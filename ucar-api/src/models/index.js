@@ -508,10 +508,79 @@ const LeadImport = sequelize.define(
   }
 );
 
+// 跟进记录表
+const LeadFollowup = sequelize.define(
+  'LeadFollowup',
+  {
+    id: {
+      type: DataTypes.BIGINT,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    leadId: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      field: 'lead_id',
+    },
+    followupContent: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      field: 'followup_content',
+    },
+    followupResult: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+      field: 'followup_result',
+    },
+    followupTime: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+      field: 'followup_time',
+    },
+    nextFollowupTime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: 'next_followup_time',
+    },
+    operatorUserId: {
+      type: DataTypes.STRING(15),
+      allowNull: false,
+      field: 'operator_user_id',
+    },
+    isDeleted: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      defaultValue: 0,
+      field: 'is_deleted',
+    },
+    deletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: 'deleted_at',
+    },
+  },
+  {
+    tableName: 'c_lead_followup',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    indexes: [
+      { fields: ['lead_id'] },
+      { fields: ['operator_user_id'] },
+      { fields: ['created_at'] },
+      { fields: ['is_deleted'] },
+    ],
+  }
+);
+
 // 建立关联关系
 Lead.belongsTo(User, { foreignKey: 'user_id', targetKey: 'userid', as: 'agent' });
 Settlement.belongsTo(Lead, { foreignKey: 'lead_id', as: 'lead' });
 Settlement.belongsTo(User, { foreignKey: 'user_id', targetKey: 'userid', as: 'operator' });
+LeadFollowup.belongsTo(Lead, { foreignKey: 'lead_id', as: 'lead' });
+LeadFollowup.belongsTo(User, { foreignKey: 'operator_user_id', targetKey: 'userid', as: 'operator' });
+Lead.hasMany(LeadFollowup, { foreignKey: 'lead_id', as: 'followups' });
 
 module.exports = {
   sequelize,
@@ -521,4 +590,5 @@ module.exports = {
   OperationLog,
   Dict,
   LeadImport,
+  LeadFollowup,
 };

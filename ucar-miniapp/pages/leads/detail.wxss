@@ -1,0 +1,16 @@
+page {
+  background: #F1F5F9;
+}
+
+.page {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.text-primary { color: #0EA5E9; }
+.text-success { color: #14B8A6; }
+.text-warning { color: #F59E0B; }

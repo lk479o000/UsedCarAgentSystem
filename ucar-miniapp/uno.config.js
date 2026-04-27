@@ -1,14 +1,11 @@
-import { defineConfig } from 'unocss'
-import presetWeapp from 'unocss-preset-weapp'
-import { transformerClass } from 'unocss-preset-weapp/transformer'
-import presetIcons from '@unocss/preset-icons'
-import { createRequire } from 'module'
-
-const require = createRequire(import.meta.url)
+const { defineConfig } = require('unocss')
+const presetWeapp = require('unocss-preset-weapp').default
+const { transformerClass } = require('unocss-preset-weapp/transformer')
+const presetIcons = require('@unocss/preset-icons').default
 
 const include = [/\.wxml$/]
 
-export default defineConfig({
+module.exports = defineConfig({
   content: { pipeline: { include } },
   presets: [
     presetWeapp(),

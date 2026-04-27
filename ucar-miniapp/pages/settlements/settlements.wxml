@@ -7,46 +7,51 @@
   </view>
 
   <!-- 结算列表 -->
-  <view class="settlement-list" wx:if="{{settlements.length > 0}}">
-    <view class="settlement-card card-glass" wx:for="{{settlements}}" wx:key="id">
+  <view class="settlement-list" wx:if="{{list.length > 0}}">
+    <view class="settlement-card card-glass" wx:for="{{list}}" wx:key="id" bindtap="onCardTap" data-id="{{item.id}}">
       <view class="settlement-header">
         <view class="customer-wrap">
           <text class="customer-name">{{item.lead.customerName}}</text>
-          <view class="settlement-status tag-{{item.status === 1 ? 'success' : 'warning'}}">{{item.status === 1 ? '已结算' : '待结算'}}</view>
+          <view class="settlement-status tag-{{item.statusType}}">{{item.statusText}}</view>
         </view>
       </view>
 
       <view class="car-info">
-        <text class="car-label">{{item.lead.carBrand}}</text>
+        <text class="car-label" wx:if="{{item.lead.carBrand}}">{{item.lead.carBrand}}</text>
         <text class="car-value">{{item.lead.carModel}}</text>
       </view>
 
       <view class="amount-row">
         <view class="amount-item">
           <text class="amount-label">利润</text>
-          <text class="amount-value">{{item.profit}}</text>
+          <text class="amount-value">¥{{item.profit}}</text>
         </view>
         <view class="amount-divider"></view>
         <view class="amount-item">
           <text class="amount-label">经纪人分成</text>
-          <text class="amount-value highlight">{{item.agentShare}}</text>
+          <text class="amount-value highlight">¥{{item.agentShare}}</text>
         </view>
       </view>
 
       <view class="settlement-time" wx:if="{{item.settledAt}}">
-        <text class="time-icon">📅</text>
+        <view class="i-lucide-calendar time-icon"></view>
         <text>{{item.settledAt}}</text>
       </view>
     </view>
   </view>
 
   <!-- 空状态 -->
-  <view wx:else class="empty">
+  <view wx:if="{{!loading && list.length === 0}}" class="empty">
     <text class="empty-icon">📭</text>
     <text>暂无结算</text>
   </view>
 
   <!-- 加载状态 -->
-  <view class="loading" wx:if="{{loading && settlements.length > 0}}">加载中...</view>
-  <view class="no-more" wx:if="{{!hasMore && settlements.length > 0}}">没有更多了</view>
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+  <view class="no-more" wx:if="{{!hasMore && list.length > 0}}">没有更多了</view>
+
+  <!-- 管理员新增按钮 -->
+  <view class="fab-btn" wx:if="{{isAdmin}}" bindtap="onAddSettlement">
+    <view class="i-lucide-plus fab-icon"></view>
+  </view>
 </view>

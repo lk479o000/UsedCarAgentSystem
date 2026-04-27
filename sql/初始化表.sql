@@ -140,3 +140,22 @@ CREATE TABLE IF NOT EXISTS c_lead_import (
   INDEX idx_import_status (import_status),
   INDEX idx_name_phone (customer_name, customer_phone)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='线索导入记录表';
+
+-- 创建c_lead_followup表
+CREATE TABLE IF NOT EXISTS c_lead_followup (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  lead_id BIGINT NOT NULL COMMENT '关联线索ID',
+  followup_content TEXT NOT NULL COMMENT '跟进内容',
+  followup_result VARCHAR(200) NULL COMMENT '跟进结果',
+  followup_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '这次跟进时间',
+  next_followup_time DATETIME NULL COMMENT '下次跟进时间',
+  operator_user_id VARCHAR(15) NOT NULL COMMENT '操作人ID',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_deleted TINYINT NOT NULL DEFAULT 0,
+  deleted_at DATETIME NULL,
+  INDEX idx_lead_id (lead_id),
+  INDEX idx_operator_user_id (operator_user_id),
+  INDEX idx_created_at (created_at),
+  INDEX idx_is_deleted (is_deleted)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='线索跟进记录表';

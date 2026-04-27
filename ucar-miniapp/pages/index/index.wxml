@@ -37,7 +37,7 @@
   <view class="card-glass recent-section">
     <view class="section-title">最近线索</view>
     <view wx:if="{{recentLeads.length > 0}}">
-      <view class="lead-item" wx:for="{{recentLeads}}" wx:key="id">
+      <view class="lead-item" wx:for="{{recentLeads}}" wx:key="id" bindtap="onLeadTap" data-id="{{item.id}}">
         <view class="lead-avatar">{{item.customerName.charAt(0)}}</view>
         <view class="lead-info">
           <view class="lead-name">{{item.customerName}}</view>

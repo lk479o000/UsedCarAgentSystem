@@ -46,6 +46,7 @@ const stats = ref({
   totalSuccess: 0,
   totalFail: 0,
   pendingAmount: 0,
+  settledAmount: 0,
 })
 
 const statsList = computed(() => [
@@ -80,6 +81,14 @@ const statsList = computed(() => [
     icon: 'i-lucide-coins',
     iconBg: 'bg-gradient-to-br from-warning/15 to-amber-300/15 text-warning',
     valueClass: 'text-warning',
+  },
+  {
+    key: 'settledAmount',
+    title: '已结算金额',
+    value: stats.value.settledAmount,
+    icon: 'i-lucide-dollar-sign',
+    iconBg: 'bg-gradient-to-br from-success/15 to-highlight/15 text-success',
+    valueClass: 'text-success',
   },
 ])
 

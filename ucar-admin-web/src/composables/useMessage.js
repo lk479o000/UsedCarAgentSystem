@@ -1,77 +1,90 @@
-import { ref, h, render } from 'vue'
-
-const MessageComponent = {
-  props: ['type', 'message', 'onClose'],
-  setup(props) {
-    const visible = ref(true)
-    const bgMap = {
-      success: 'bg-success/10 border-success/20 text-teal-700',
-      error: 'bg-danger/10 border-danger/20 text-red-700',
-      warning: 'bg-warning/10 border-warning/20 text-amber-700',
-      info: 'bg-primary/10 border-primary/20 text-primary-dark',
-    }
-    const iconMap = {
-      success: 'i-lucide-circle-check',
-      error: 'i-lucide-circle-x',
-      warning: 'i-lucide-triangle-alert',
-      info: 'i-lucide-info',
-    }
-
-    setTimeout(() => {
-      visible.value = false
-      setTimeout(() => props.onClose?.(), 300)
-    }, 3000)
-
-    return () =>
-      h(
-        'transition',
-        {
-          enterActiveClass: 'transition-all duration-300 ease-out',
-          enterFromClass: 'opacity-0 translate-x-full scale-90',
-          enterToClass: 'opacity-100 translate-x-0 scale-100',
-          leaveActiveClass: 'transition-all duration-200 ease-in',
-          leaveFromClass: 'opacity-100 translate-x-0 scale-100',
-          leaveToClass: 'opacity-0 translate-x-full scale-90',
-        },
-        () =>
-          visible.value
-            ? h(
-                'div',
-                {
-                  class: `fixed top-4 right-4 z-50 min-w-300px rounded-md border px-6 py-3.5 shadow-lg flex items-center gap-3 font-medium text-sm ${bgMap[props.type]}`,
-                },
-                [
-                  h('span', { class: `text-lg ${iconMap[props.type]}` }),
-                  h('span', null, props.message),
-                ]
-              )
-            : null
-      )
-  },
-}
-
 let seed = 0
 const instances = new Map()
 
+const bgMap = {
+  success: 'bg-success/10 border-success/20 text-teal-700',
+  error: 'bg-danger/10 border-danger/20 text-red-700',
+  warning: 'bg-warning/10 border-warning/20 text-amber-700',
+  info: 'bg-primary/10 border-primary/20 text-primary-dark',
+}
+
+const iconMap = {
+  success: 'i-lucide-circle-check',
+  error: 'i-lucide-circle-x',
+  warning: 'i-lucide-triangle-alert',
+  info: 'i-lucide-info',
+}
+
+// 更新消息位置
+function updateMessagePositions() {
+  const messages = Array.from(instances.values())
+  messages.forEach((message, index) => {
+    message.style.top = `${30 + index * 70}px` // 30px 是第一条消息的顶部位置，70px 是每个消息的大致高度
+  })
+}
+
 function createMessage(type) {
   return (message) => {
+    console.log(`Message.${type} called with:`, message)
     const id = `message-${++seed}`
-    const container = document.createElement('div')
-    container.id = id
-    document.body.appendChild(container)
-
-    const vnode = h(MessageComponent, {
-      type,
-      message,
-      onClose: () => {
-        render(null, container)
-        document.body.removeChild(container)
-        instances.delete(id)
-      },
-    })
-
-    render(vnode, container)
-    instances.set(id, { container, vnode })
+    
+    // 使用原生DOM操作创建消息框
+    const messageElement = document.createElement('div')
+    messageElement.id = id
+    messageElement.className = `min-w-[300px] h-auto rounded-md border px-6 py-3.5 shadow-lg flex items-center gap-3 font-medium text-sm ${bgMap[type]}`
+    messageElement.style.display = 'block'
+    messageElement.style.visibility = 'visible'
+    messageElement.style.opacity = '1'
+    // 计算左边菜单的宽度，默认为240px
+    const menuWidth = 240
+    
+    messageElement.style.position = 'fixed'
+    messageElement.style.top = '50%'
+    messageElement.style.left = '50%'
+    messageElement.style.transform = 'translate(-50%, -50%)'
+    messageElement.style.zIndex = '500'
+    
+    // 创建图标元素
+    const iconElement = document.createElement('span')
+    iconElement.className = `text-lg ${iconMap[type]}`
+    
+    // 创建文本元素
+    const textElement = document.createElement('span')
+    textElement.textContent = message
+    
+    // 组装消息框
+    messageElement.appendChild(iconElement)
+    messageElement.appendChild(textElement)
+    
+    console.log('Creating message element:', messageElement)
+    document.body.appendChild(messageElement)
+    console.log('Message element appended to body')
+    
+    instances.set(id, messageElement)
+    
+    // 更新消息位置
+    updateMessagePositions()
+    
+    // 自动关闭
+    setTimeout(() => {
+      console.log('Closing message:', id)
+      if (messageElement.parentNode) {
+        // 添加淡出动画
+        messageElement.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out'
+        messageElement.style.opacity = '0'
+        messageElement.style.transform = 'translateX(100%) scale(0.9)'
+        
+        // 动画结束后移除元素
+        setTimeout(() => {
+          if (messageElement.parentNode) {
+            messageElement.parentNode.removeChild(messageElement)
+            instances.delete(id)
+            // 更新其他消息的位置
+            updateMessagePositions()
+          }
+        }, 300)
+      }
+    }, 3000)
   }
 }
 

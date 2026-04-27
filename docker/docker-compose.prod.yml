@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: ucar-mysql
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - /data/ucar/mysql:/var/lib/mysql
+      - /data/ucar/mysql-init:/docker-entrypoint-initdb.d:ro
+    # 方便你“本机直连数据库”的最安全方式：用 SSH 隧道连 127.0.0.1:3306
+    # 如确需公网直连，把 127.0.0.1 改成 0.0.0.0，并在安全组只放行你自己的固定IP
+    ports:
+      - "127.0.0.1:3306:3306"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ../ucar-api
+      dockerfile: Dockerfile
+    container_name: ucar-api
+    environment:
+      TZ: Asia/Shanghai
+      NODE_ENV: production
+      PORT: 8902
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${MYSQL_USER}
+      DB_PASS: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      WX_APPID: ${WX_APPID:-}
+      WX_SECRET: ${WX_SECRET:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_DIR: /app/logs
+    volumes:
+      - /data/ucar/logs/api:/app/logs
+    depends_on:
+      - mysql
+    expose:
+      - "8902"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: ucar-nginx
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # PC端构建产物（把 ucar-admin-web/dist 同步到这里）
+      - /data/ucar/www:/usr/share/nginx/html:ro
+      # 单域名生产配置（/ 静态站点 + /api/ 反代）
+      - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      # HTTPS 证书（把 fullchain.pem/privkey.pem 放到这里）
+      - /data/ucar/certs:/etc/nginx/certs:ro
+      - /data/ucar/logs/nginx:/var/log/nginx
+    restart: unless-stopped
+

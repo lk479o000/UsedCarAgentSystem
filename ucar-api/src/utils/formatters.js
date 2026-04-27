@@ -1,14 +1,11 @@
+const dayjs = require('dayjs');
+
 /**
  * Format date to YYYY-MM-DD HH:MM:SS
  */
 const formatDate = (date) => {
   if (!date) return null;
-  if (date instanceof Date) {
-    return date.toISOString().slice(0, 19).replace('T', ' ');
-  } else if (typeof date === 'string') {
-    return date.slice(0, 19).replace('T', ' ');
-  }
-  return date;
+  return dayjs(date).format('YYYY-MM-DD HH:mm:ss');
 };
 
 /**
@@ -28,7 +25,7 @@ const snakeToCamel = (obj) => {
         const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
         let value = obj[key];
         // Format date fields
-        if (key === 'created_at' || key === 'updated_at' || key === 'deleted_at') {
+        if (key === 'created_at' || key === 'updated_at' || key === 'deleted_at' || key === 'followup_time' || key === 'next_followup_time' || key === 'followupTime' || key === 'nextFollowupTime' || key === 'createdAt' || key === 'updatedAt' || key === 'deletedAt' || key === 'settled_at' || key === 'settledAt') {
           value = formatDate(value);
         }
         result[camelKey] = snakeToCamel(value);

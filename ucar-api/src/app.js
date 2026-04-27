@@ -12,6 +12,8 @@ const app = express();
 
 // 中间件
 app.use(helmet());
+// 让req.ip / req.protocol等从X-Forwarded-*读取（ngrok/nginx反代场景）
+app.set('trust proxy', true);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

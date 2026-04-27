@@ -1,0 +1,39 @@
+<view class="page p-4">
+  <view class="card-glass p-4">
+    <view class="mb-5">
+      <text class="text-sm font-semibold text-gray-800 mb-2 block">跟进内容 <text class="text-red-500">*</text></text>
+      <textarea class="border border-gray-200 rounded-xl px-4 py-3 text-base" placeholder="请输入跟进内容" maxlength="500" value="{{content}}" bindinput="onContentInput" style="min-height: 200rpx;" />
+    </view>
+
+    <view class="mb-5">
+      <text class="text-sm font-semibold text-gray-800 mb-2 block">跟进结果</text>
+      <textarea class="border border-gray-200 rounded-xl px-4 py-3 text-base" placeholder="请输入跟进结果（可选）" maxlength="200" value="{{result}}" bindinput="onResultInput" style="min-height: 120rpx;" />
+    </view>
+
+    <view class="mb-5">
+      <text class="text-sm font-semibold text-gray-800 mb-2 block">这次跟进时间</text>
+      <picker mode="date" value="{{followUpTime}}" bindchange="onFollowUpTimeChange">
+        <view class="border border-gray-200 rounded-xl px-4 py-3 text-base flex justify-between items-center">
+          <text class="{{followUpTime ? 'text-gray-800' : 'text-gray-400'}}">{{followUpTime || '请选择日期'}}</text>
+          <view class="i-lucide-calendar text-gray-400"></view>
+        </view>
+      </picker>
+    </view>
+
+    <view class="mb-5">
+      <text class="text-sm font-semibold text-gray-800 mb-2 block">下次跟进时间</text>
+      <picker mode="date" value="{{nextFollowUpTime}}" bindchange="onNextFollowUpTimeChange">
+        <view class="border border-gray-200 rounded-xl px-4 py-3 text-base flex justify-between items-center">
+          <text class="{{nextFollowUpTime ? 'text-gray-800' : 'text-gray-400'}}">{{nextFollowUpTime || '请选择日期'}}</text>
+          <view class="i-lucide-calendar text-gray-400"></view>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="h-8"></view>
+
+  <button class="btn-primary w-full py-4 text-base font-semibold" loading="{{submitting}}" bindtap="onSubmit">
+    {{isEdit ? '保存修改' : '确定新增'}}
+  </button>
+</view>

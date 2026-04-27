@@ -50,6 +50,22 @@ router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
 });
 
 /**
+ * 根据线索ID获取结算记录
+ * GET /api/v1/settlement/lead/:leadId
+ */
+router.get('/lead/:leadId', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const result = await settlementService.getSettlementByLeadId(req.params.leadId);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, result.data);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
+/**
  * 更新结算状态
  * PUT /api/v1/settlement/:id
  */

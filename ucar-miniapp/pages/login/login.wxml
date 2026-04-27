@@ -46,4 +46,21 @@
       <text class="agreement-link" bindtap="showPrivacy">《隐私政策》</text>
     </view>
   </view>
+
+  <!-- 自定义弹窗 -->
+  <view class="modal-container" wx:if="{{showModal}}">
+    <view class="modal-content">
+      <view class="modal-title">提示</view>
+      <view class="modal-text">
+        请先阅读并同意
+        <text class="modal-link" bindtap="showAgreement">《用户协议》</text>
+        和
+        <text class="modal-link" bindtap="showPrivacy">《隐私政策》</text>
+      </view>
+      <view class="modal-buttons">
+        <button class="modal-btn cancel" bindtap="hideModal">取消</button>
+        <button class="modal-btn confirm" bindtap="agreeAndClose">同意</button>
+      </view>
+    </view>
+  </view>
 </view>

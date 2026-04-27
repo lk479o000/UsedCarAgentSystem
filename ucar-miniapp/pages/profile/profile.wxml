@@ -1,41 +1,121 @@
 <view class="page p-4">
-  <view class="profile-header card-glass">
-    <view class="avatar">
+  <!-- 头部信息 -->
+  <view class="card-glass p-5 mb-4 flex items-center" style="background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%); border-radius: 32rpx; box-shadow: 0 8rpx 24rpx rgba(14, 165, 233, 0.3);">
+    <view class="w-16 h-16 rounded-full overflow-hidden mr-4 border-2 border-white border-opacity-30 bg-white bg-opacity-20 flex items-center justify-center">
       <open-data type="userAvatarUrl"></open-data>
     </view>
-    <view class="user-info">
-      <view class="nickname">
+    <view class="flex-1">
+      <view class="text-lg font-semibold text-white">
         <open-data type="userNickName"></open-data>
       </view>
-      <view class="phone" wx:if="{{userInfo.phone}}">{{userInfo.phone}}</view>
+      <view class="text-sm text-white text-opacity-80 mt-1" wx:if="{{userInfo.phone}}">{{userInfo.phone}}</view>
     </view>
   </view>
 
-  <view class="menu-list card-glass">
-    <view class="menu-item">
-      <view class="menu-left">
-        <view class="menu-icon icon-user i-lucide-user"></view>
-        <text class="menu-label">姓名</text>
+  <!-- 用户信息 -->
+  <view class="card-glass mb-4 overflow-hidden">
+    <view class="flex justify-between items-center px-4 py-4 border-b border-gray-100">
+      <view class="flex items-center gap-3">
+        <view class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(14, 165, 233, 0.15);">
+          <view class="i-lucide-user text-sm" style="color: #0EA5E9;"></view>
+        </view>
+        <text class="text-sm text-gray-800">姓名</text>
       </view>
-      <text class="menu-value">{{userInfo.username || '-'}}</text>
+      <text class="text-sm text-gray-500">{{userInfo.username || '-'}}</text>
     </view>
-    <view class="menu-item">
-      <view class="menu-left">
-        <view class="menu-icon icon-role i-lucide-shield"></view>
-        <text class="menu-label">角色</text>
+    <view class="flex justify-between items-center px-4 py-4 border-b border-gray-100">
+      <view class="flex items-center gap-3">
+        <view class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(20, 184, 166, 0.15);">
+          <view class="i-lucide-shield text-sm" style="color: #14B8A6;"></view>
+        </view>
+        <text class="text-sm text-gray-800">角色</text>
       </view>
-      <text class="menu-value">{{userInfo.role === 1 ? '经纪人' : '管理员'}}</text>
+      <text class="text-sm text-gray-500">{{isAdmin ? '管理员' : '经纪人'}}</text>
     </view>
-    <view class="menu-item">
-      <view class="menu-left">
-        <view class="menu-icon icon-status i-lucide-activity"></view>
-        <text class="menu-label">状态</text>
+    <view class="flex justify-between items-center px-4 py-4 border-b border-gray-100">
+      <view class="flex items-center gap-3">
+        <view class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(245, 158, 11, 0.15);">
+          <view class="i-lucide-activity text-sm" style="color: #F59E0B;"></view>
+        </view>
+        <text class="text-sm text-gray-800">状态</text>
       </view>
-      <text class="menu-value {{userInfo.status === 1 ? 'enabled' : 'disabled'}}">
-        {{userInfo.status === 1 ? '正常' : '禁用'}}
-      </text>
+      <text class="text-sm {{userInfo.status === 1 ? 'text-green-500' : 'text-red-500'}}">{{userInfo.status === 1 ? '正常' : '禁用'}}</text>
+    </view>
+    <view class="flex justify-between items-center px-4 py-4">
+      <view class="flex items-center gap-3">
+        <view class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(59, 130, 246, 0.15);">
+          <view class="i-lucide-smartphone text-sm" style="color: #3B82F6;"></view>
+        </view>
+        <text class="text-sm text-gray-800">手机号</text>
+      </view>
+      <text class="text-sm text-gray-500">{{userInfo.phone || '未绑定'}}</text>
     </view>
   </view>
 
-  <button class="logout-btn btn-danger i-lucide-log-out" bindtap="logout">退出登录</button>
+  <!-- 功能菜单 -->
+  <view class="card-glass mb-4 overflow-hidden">
+    <view class="flex justify-between items-center px-4 py-4 border-b border-gray-100" bindtap="showChangePassword">
+      <view class="flex items-center gap-3">
+        <view class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(14, 165, 233, 0.15);">
+          <view class="i-lucide-lock text-sm" style="color: #0EA5E9;"></view>
+        </view>
+        <text class="text-sm text-gray-800">修改密码</text>
+      </view>
+      <view class="i-lucide-chevron-right text-gray-300"></view>
+    </view>
+    <view class="flex justify-between items-center px-4 py-4 border-b border-gray-100" bindtap="goToBindPhone">
+      <view class="flex items-center gap-3">
+        <view class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(59, 130, 246, 0.15);">
+          <view class="i-lucide-smartphone text-sm" style="color: #3B82F6;"></view>
+        </view>
+        <text class="text-sm text-gray-800">绑定手机号</text>
+      </view>
+      <view class="i-lucide-chevron-right text-gray-300"></view>
+    </view>
+    <view class="flex justify-between items-center px-4 py-4 border-b border-gray-100" bindtap="goToAgreement">
+      <view class="flex items-center gap-3">
+        <view class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(100, 116, 139, 0.15);">
+          <view class="i-lucide-file-text text-sm" style="color: #64748B;"></view>
+        </view>
+        <text class="text-sm text-gray-800">用户协议</text>
+      </view>
+      <view class="i-lucide-chevron-right text-gray-300"></view>
+    </view>
+    <view class="flex justify-between items-center px-4 py-4" bindtap="goToPrivacy">
+      <view class="flex items-center gap-3">
+        <view class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(100, 116, 139, 0.15);">
+          <view class="i-lucide-shield text-sm" style="color: #64748B;"></view>
+        </view>
+        <text class="text-sm text-gray-800">隐私政策</text>
+      </view>
+      <view class="i-lucide-chevron-right text-gray-300"></view>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <button class="w-full py-4 rounded-2xl text-base font-semibold border-none" style="background: linear-gradient(135deg, #EF4444, #F87171); color: #fff; box-shadow: 0 4rpx 16rpx rgba(239, 68, 68, 0.3);" bindtap="logout">
+    退出登录
+  </button>
+
+  <!-- 修改密码弹窗 -->
+  <view class="fixed inset-0 bg-black bg-opacity-50 z-200" wx:if="{{showPasswordModal}}" bindtap="closePasswordModal"></view>
+  <view class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl z-300 p-6" wx:if="{{showPasswordModal}}" style="width: 85%;">
+    <view class="text-lg font-bold text-gray-800 text-center mb-5">修改密码</view>
+    <view class="mb-4">
+      <text class="text-sm text-gray-600 mb-1 block">原密码</text>
+      <input class="border border-gray-200 rounded-xl px-4 py-3 text-base" password placeholder="请输入原密码" value="{{oldPassword}}" bindinput="onOldPasswordInput" />
+    </view>
+    <view class="mb-4">
+      <text class="text-sm text-gray-600 mb-1 block">新密码</text>
+      <input class="border border-gray-200 rounded-xl px-4 py-3 text-base" password placeholder="至少8位，包含字母和数字" value="{{newPassword}}" bindinput="onNewPasswordInput" />
+    </view>
+    <view class="mb-5">
+      <text class="text-sm text-gray-600 mb-1 block">确认密码</text>
+      <input class="border border-gray-200 rounded-xl px-4 py-3 text-base" password placeholder="请再次输入新密码" value="{{confirmPassword}}" bindinput="onConfirmPasswordInput" />
+    </view>
+    <view class="flex gap-3">
+      <view class="flex-1 text-center py-3 rounded-xl bg-gray-100 text-gray-600 text-base" bindtap="closePasswordModal">取消</view>
+      <view class="flex-1 text-center py-3 rounded-xl btn-primary text-white text-base" bindtap="onChangePassword">确定</view>
+    </view>
+  </view>
 </view>

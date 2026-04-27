@@ -23,7 +23,7 @@ const validate = async () => {
   for (const [key, rules] of Object.entries(props.rules)) {
     const value = props.model[key]
     for (const rule of rules) {
-      if (rule.required && (!value || (typeof value === 'string' && !value.trim()))) {
+      if (rule.required && (value === undefined || value === null || (typeof value === 'string' && !value.trim()))) {
         errors[key] = rule.message || '必填项'
         valid = false
         break

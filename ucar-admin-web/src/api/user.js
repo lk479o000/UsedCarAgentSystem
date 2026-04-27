@@ -19,3 +19,7 @@ export const getAgentLeads = (params) => {
 export const getAgentSettlements = (params) => {
   return request.get('/user/settlement', { params })
 }
+
+export const resetPassword = (id) => {
+  return request.post(`/user/${id}/reset-password`)
+}

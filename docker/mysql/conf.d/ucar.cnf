@@ -1,0 +1,27 @@
+[mysqld]
+# 2G 单机：核心目标是“稳”，牺牲部分缓存换取不 OOM
+
+# 基础
+max_connections = 60
+table_open_cache = 256
+
+# InnoDB（小内存设置）
+innodb_buffer_pool_size = 256M
+innodb_buffer_pool_instances = 1
+innodb_log_file_size = 64M
+innodb_flush_log_at_trx_commit = 1
+
+# 临时表/排序（防止大排序把内存吃爆）
+tmp_table_size = 32M
+max_heap_table_size = 32M
+sort_buffer_size = 2M
+join_buffer_size = 2M
+read_buffer_size = 1M
+read_rnd_buffer_size = 2M
+
+# 避免 DNS 反查带来的连接慢/抖动
+skip_name_resolve = 1
+
+[client]
+default-character-set = utf8mb4
+

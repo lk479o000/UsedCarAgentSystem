@@ -1,5 +1,5 @@
 const { Settlement, Lead, User, OperationLog } = require('../models');
-const { SETTLEMENT_STATUS, OPERATION_TYPE, OPERATION_TARGET, ERROR_CODES } = require('../utils/constants');
+const { SETTLEMENT_STATUS, LEAD_STATUS, OPERATION_TYPE, OPERATION_TARGET, ERROR_CODES } = require('../utils/constants');
 const { Op } = require('sequelize');
 const logger = require('../utils/logger');
 const { snakeToCamel } = require('../utils/formatters');
@@ -131,7 +131,6 @@ const getSettlementList = async (filters, pagination) => {
     order: [['created_at', 'DESC']],
     limit: pagination.size,
     offset: (pagination.page - 1) * pagination.size,
-    raw: true,
   });
 
   return {
@@ -168,6 +167,9 @@ const updateSettlementStatus = async (id, updateData, operatorUserId) => {
   }
 
   const updateFields = {};
+  if (updateData.leadId !== undefined) {
+    updateFields.leadId = updateData.leadId;
+  }
   if (updateData.status !== undefined) {
     updateFields.status = updateData.status;
   }
@@ -175,6 +177,12 @@ const updateSettlementStatus = async (id, updateData, operatorUserId) => {
     updateFields.settledAt = updateData.settledAt;
   } else if (updateData.status === SETTLEMENT_STATUS.SETTLED) {
     updateFields.settledAt = new Date();
+  }
+  if (updateData.profit !== undefined) {
+    updateFields.profit = updateData.profit;
+  }
+  if (updateData.agentShare !== undefined) {
+    updateFields.agentShare = updateData.agentShare;
   }
   if (updateData.remark !== undefined) {
     updateFields.remark = updateData.remark;
@@ -294,9 +302,37 @@ const pushSettlementNotify = async (id) => {
   }
 };
 
+/**
+ * 根据线索ID获取结算记录
+ */
+const getSettlementByLeadId = async (leadId) => {
+  try {
+    const settlement = await Settlement.findOne({
+      where: { leadId, isDeleted: 0 },
+      include: [
+        {
+          model: Lead,
+          as: 'lead',
+          attributes: ['id', 'customerName', 'customerPhone', 'carBrand', 'carModel'],
+        },
+      ],
+    });
+
+    if (!settlement) {
+      return { code: ERROR_CODES.NOT_FOUND, message: '结算记录不存在' };
+    }
+
+    return { code: ERROR_CODES.SUCCESS, data: snakeToCamel(settlement) };
+  } catch (err) {
+    logger.error('根据线索ID获取结算记录异常:', err.message);
+    return { code: ERROR_CODES.SYSTEM_ERROR, message: '系统错误' };
+  }
+};
+
 module.exports = {
   createSettlement,
   getSettlementList,
+  getSettlementByLeadId,
   updateSettlementStatus,
   pushSettlementNotify,
 };

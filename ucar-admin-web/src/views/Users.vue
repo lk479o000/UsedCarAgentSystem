@@ -37,12 +37,15 @@
               <UButton
                 :type="row.status === 1 ? 'danger' : 'success'"
                 size="sm"
-                @click="handleToggleStatus(row)"
+                @click.stop="handleToggleStatus(row)"
               >
                 {{ row.status === 1 ? '禁用' : '启用' }}
               </UButton>
-              <UButton type="primary" size="sm" @click="showEditDialog(row)">
+              <UButton type="primary" size="sm" @click.stop="showEditDialog(row)">
                 编辑
+              </UButton>
+              <UButton type="default" size="sm" @click.stop="handleResetPassword(row)">
+                重置密码
               </UButton>
             </div>
           </template>
@@ -81,6 +84,14 @@
             @suffix-click="showPassword = !showPassword"
           />
         </UFormItem>
+        <UFormItem label="备注" prop="remark">
+          <UInput
+            v-model="form.remark"
+            placeholder="请输入备注"
+            type="textarea"
+            :rows="3"
+          />
+        </UFormItem>
       </UForm>
       <template #footer>
         <div class="flex justify-end gap-3">
@@ -97,6 +108,15 @@
       :message="`确认${toggleAction}该经纪人?`"
       type="warning"
       @confirm="confirmToggle"
+    />
+
+    <!-- 重置密码确认对话框 -->
+    <UConfirm
+      v-model="resetPasswordVisible"
+      title="确认重置密码"
+      message="确认重置该经纪人的密码?重置后密码将变为123456"
+      type="warning"
+      @confirm="confirmResetPassword"
     />
 
     <!-- 详情对话框 -->
@@ -120,14 +140,19 @@
             {{ detailForm.status === 1 ? '启用' : '禁用' }}
           </UTag>
         </div>
+        <div class="flex items-start gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">备注</span>
+          <span class="text-sm text-text-primary">{{ detailForm.remark || '无' }}</span>
+        </div>
         <div class="flex items-center gap-4">
           <span class="text-sm font-medium text-text-secondary w-20">创建时间</span>
           <span class="text-sm text-text-primary">{{ detailForm.createdAt }}</span>
         </div>
       </div>
       <template #footer>
-        <div class="flex justify-end">
-          <UButton type="primary" @click="detailDialogVisible = false">关闭</UButton>
+        <div class="flex justify-end gap-3">
+          <UButton type="primary" @click="showEditDialog(detailForm)">编辑</UButton>
+          <UButton type="default" @click="detailDialogVisible = false">关闭</UButton>
         </div>
       </template>
     </UDialog>
@@ -147,6 +172,14 @@
         <UFormItem label="状态" prop="status">
           <USelect v-model="editForm.status" :options="statusOptions" placeholder="请选择" />
         </UFormItem>
+        <UFormItem label="备注" prop="remark">
+          <UInput
+            v-model="editForm.remark"
+            placeholder="请输入备注"
+            type="textarea"
+            :rows="3"
+          />
+        </UFormItem>
       </UForm>
       <template #footer>
         <div class="flex justify-end gap-3">
@@ -161,7 +194,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { Message } from '@/composables/useMessage'
-import { getUserList, createUser, updateUser } from '@/api/user'
+import { getUserList, createUser, updateUser, resetPassword } from '@/api/user'
 import UCard from '@/components/UCard.vue'
 import UButton from '@/components/UButton.vue'
 import UInput from '@/components/UInput.vue'
@@ -181,6 +214,7 @@ const dialogVisible = ref(false)
 const detailDialogVisible = ref(false)
 const editDialogVisible = ref(false)
 const toggleConfirmVisible = ref(false)
+const resetPasswordVisible = ref(false)
 const toggleAction = ref('')
 const currentRow = ref(null)
 const formRef = ref()
@@ -189,9 +223,9 @@ const editFormRef = ref()
 const searchForm = reactive({ username: '', status: '' })
 const pagination = reactive({ page: 1, size: 20, total: 0 })
 
-const form = reactive({ userid: '', username: '', phone: '', password: '' })
-const detailForm = reactive({ userid: '', username: '', phone: '', status: 1, createdAt: '' })
-const editForm = reactive({ id: '', userid: '', username: '', phone: '', status: 1 })
+const form = reactive({ userid: '', username: '', phone: '', password: '', remark: '' })
+const detailForm = reactive({ userid: '', username: '', phone: '', status: 1, createdAt: '', remark: '' })
+const editForm = reactive({ id: '', userid: '', username: '', phone: '', status: 1, remark: '' })
 const showPassword = ref(false)
 
 const formRules = {
@@ -219,12 +253,12 @@ const statusOptions = [
 ]
 
 const columns = [
-  { key: 'userid', title: '账号' },
-  { key: 'username', title: '姓名' },
-  { key: 'phone', title: '手机号' },
-  { key: 'status', title: '状态' },
-  { key: 'createdAt', title: '创建时间' },
-  { key: 'action', title: '操作', width: '200px' },
+  { key: 'userid', title: '账号', width: '120px' },
+  { key: 'username', title: '姓名', width: '100px' },
+  { key: 'phone', title: '手机号', width: '130px' },
+  { key: 'status', title: '状态', width: '80px' },
+  { key: 'createdAt', title: '创建时间', width: '180px' },
+  { key: 'action', title: '操作', width: '220px' },
 ]
 
 const loadData = async () => {
@@ -244,7 +278,7 @@ const handleSizeChange = (size) => { pagination.size = size; loadData() }
 const handlePageChange = (page) => { pagination.page = page; loadData() }
 
 const showAddDialog = () => {
-  Object.assign(form, { userid: '', username: '', phone: '', password: '123456' })
+  Object.assign(form, { userid: '', username: '', phone: '', password: '123456', remark: '' })
   showPassword.value = false
   dialogVisible.value = true
 }
@@ -296,6 +330,20 @@ const handleEditSubmit = async () => {
     Message.success('编辑成功')
     editDialogVisible.value = false
     loadData()
+  } catch (error) {
+    // 错误已经在request拦截器中处理，这里不需要重复处理
+  }
+}
+
+const handleResetPassword = (row) => {
+  currentRow.value = row
+  resetPasswordVisible.value = true
+}
+
+const confirmResetPassword = async () => {
+  try {
+    await resetPassword(currentRow.value.id)
+    Message.success('密码重置成功，默认密码为123456')
   } catch (error) {
     // 错误已经在request拦截器中处理，这里不需要重复处理
   }

@@ -1,0 +1,91 @@
+<view class="container">
+  <view class="header">
+    <text class="title">隐私政策</text>
+  </view>
+  <view class="content">
+    <view class="section">
+      <text class="section-title">一、信息收集</text>
+      <text class="section-content">本系统会收集以下信息：</text>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">微信授权信息：用户的微信唯一标识（OpenID）、手机号、昵称、头像</text>
+      </view>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">管理员录入信息：姓名、手机号</text>
+      </view>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">业务数据：线索数据、结算数据（均由管理员录入）</text>
+      </view>
+    </view>
+    
+    <view class="section">
+      <text class="section-title">二、信息使用</text>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">收集的信息仅用于线索管理、结算提醒、收益统计。</text>
+      </view>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">经纪人仅能查看与本人手机号匹配的线索和结算。</text>
+      </view>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">系统会通过微信服务通知向经纪人推送结算提醒。</text>
+      </view>
+    </view>
+    
+    <view class="section">
+      <text class="section-title">三、信息存储与保护</text>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">所有数据存储在云服务器的数据库中，采用加密传输。</text>
+      </view>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">数据库账号采用最小权限原则，避免越权访问。</text>
+      </view>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">日志与备份仅用于系统维护，不会泄露给第三方。</text>
+      </view>
+    </view>
+    
+    <view class="section">
+      <text class="section-title">四、信息共享</text>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">除法律法规要求外，系统不会向任何第三方共享用户信息。</text>
+      </view>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">管理员仅能查看与业务相关的数据，不得用于其他用途。</text>
+      </view>
+    </view>
+    
+    <view class="section">
+      <text class="section-title">五、用户权利</text>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">用户有权要求查询、修改或删除其个人信息（昵称、头像、手机号）。</text>
+      </view>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">用户有权随时退出系统，停止使用服务。</text>
+      </view>
+    </view>
+    
+    <view class="section">
+      <text class="section-title">特别说明</text>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">本系统使用微信的 <text class="highlight">服务通知功能</text>，用于向经纪人推送结算提醒。用户在使用本系统时，即表示同意接收此类通知。</text>
+      </view>
+      <view class="list-item">
+        <text class="list-dot">•</text>
+        <text class="list-text">本协议与隐私政策需与微信官方的《用户协议》《隐私政策》共同生效。</text>
+      </view>
+    </view>
+  </view>
+</view>

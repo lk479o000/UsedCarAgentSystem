@@ -1,15 +1,32 @@
 const request = require('./request')
 
 module.exports = {
-  // 登录（一键登录：code + encryptedData + iv）
   login: (data) => request.post('/auth/login/wechat', data),
 
-  // 概览
   getOverview: () => request.get('/user/overview'),
 
-  // 线索
   getLeads: (params) => request.get('/user/lead', params),
+  getAdminLeads: (params) => request.get('/lead', params),
+  getLeadDetail: (id) => request.get(`/lead/${id}`),
+  createLead: (data) => request.post('/lead', data),
+  updateLead: (id, data) => request.put(`/lead/${id}`, data),
+  deleteLead: (id) => request.del(`/lead/${id}`),
+  updateLeadStatus: (id, data) => request.put(`/lead/${id}`, data),
 
-  // 结算
+  getFollowups: (leadId) => request.get(`/lead/${leadId}/followup`),
+  createFollowup: (leadId, data) => request.post(`/lead/${leadId}/followup`, data),
+  updateFollowup: (id, data) => request.put(`/lead/followup/${id}`, data),
+  deleteFollowup: (id) => request.del(`/lead/followup/${id}`),
+
   getSettlements: (params) => request.get('/user/settlement', params),
+  getAdminSettlements: (params) => request.get('/settlement', params),
+  getSettlementDetail: (id) => request.get(`/settlement/${id}`),
+  getSettlementByLead: (leadId) => request.get(`/settlement/lead/${leadId}`),
+  createSettlement: (data) => request.post('/settlement', data),
+  updateSettlement: (id, data) => request.put(`/settlement/${id}`, data),
+
+  getAgents: (params) => request.get('/user/agents', params),
+
+  changePassword: (data) => request.put('/user/password', data),
+  bindPhone: (data) => request.post('/user/bind-phone', data),
 }

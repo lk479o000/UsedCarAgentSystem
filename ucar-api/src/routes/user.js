@@ -64,6 +64,22 @@ router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * 重置经纪人密码
+ * POST /api/v1/user/:id/reset-password
+ */
+router.post('/:id/reset-password', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const result = await userService.resetPassword(req.params.id, req.user.userid);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, null, result.message);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
 // ========== 经纪人端接口 ==========
 
 /**

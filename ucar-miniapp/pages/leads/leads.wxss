@@ -5,6 +5,7 @@ page {
 
 .page {
   padding: 24rpx;
+  padding-bottom: 140rpx;
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -13,28 +14,51 @@ page {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 筛选栏 */
+/* 筛选栏 - 横向滚动 */
 .filter-bar {
   display: flex;
   padding: 12rpx;
-  margin-bottom: 24rpx;
+  margin-bottom: 16rpx;
+  white-space: nowrap;
 }
 
 .filter-item {
-  flex: 1;
-  text-align: center;
-  padding: 20rpx 0;
-  font-size: 28rpx;
+  display: inline-block;
+  padding: 16rpx 28rpx;
+  font-size: 26rpx;
   color: #94A3B8;
   border-radius: 24rpx;
   font-weight: 500;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .filter-item.active {
   background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%);
   color: #fff;
   box-shadow: 0 4rpx 16rpx rgba(14, 165, 233, 0.3);
+}
+
+/* 搜索栏 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx;
+  margin-bottom: 24rpx;
+  gap: 16rpx;
+}
+
+.search-icon {
+  font-size: 32rpx;
+  color: #94A3B8;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #0F172A;
+  height: 48rpx;
 }
 
 /* 线索卡片 */
@@ -132,23 +156,50 @@ page {
   font-weight: 500;
 }
 
-/* 备注 */
+/* 底部信息 */
 .lead-footer {
   display: flex;
-  gap: 8rpx;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.notes-label {
+.agent-name {
+  font-size: 24rpx;
+  color: #0EA5E9;
+  font-weight: 500;
+}
+
+.create-time {
   font-size: 24rpx;
   color: #94A3B8;
   font-weight: 500;
-  flex-shrink: 0;
 }
 
-.notes-value {
-  font-size: 24rpx;
-  color: #475569;
-  line-height: 1.5;
+/* 悬浮新增按钮 */
+.fab-btn {
+  position: fixed;
+  right: 40rpx;
+  bottom: 160rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(14, 165, 233, 0.4);
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.fab-btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 4rpx 12rpx rgba(14, 165, 233, 0.5);
+}
+
+.fab-icon {
+  font-size: 48rpx;
+  color: #fff;
 }
 
 /* 加载和空状态 */

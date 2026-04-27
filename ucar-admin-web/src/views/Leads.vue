@@ -29,18 +29,24 @@
 
       <!-- 表格 -->
       <ULoading :loading="loading">
-        <UTable :data="tableData" :columns="columns">
+        <UTable :data="tableData" :columns="columns" @row-click="handleRowClick">
           <template #status="{ row }">
             <UTag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</UTag>
+          </template>
+          <template #customerType="{ row }">
+            {{ getCustomerTypeText(row.customerType) }}
           </template>
           <template #agent="{ row }">
             {{ row.agent?.username || '-' }}
           </template>
           <template #action="{ row }">
             <div class="flex gap-2">
-              <UButton v-if="userStore.isAdmin" type="ghost" size="sm" @click="handleUpdateStatus(row)">更新状态</UButton>
-              <UButton v-if="userStore.isAdmin" type="ghost" size="sm" @click="handleSettlement(row)">结算</UButton>
-              <UButton v-if="userStore.isAdmin" type="ghost" size="sm" class="text-danger hover:text-danger hover:bg-danger/10" @click="handleDelete(row)">删除</UButton>
+              <UButton v-if="userStore.isAdmin && row.status !== 4" type="default" size="sm" @click.stop="handleUpdateStatus(row)">更新状态</UButton>
+              <UButton v-if="userStore.isAdmin" type="primary" size="sm" @click.stop="showEditDialog(row)">编辑</UButton>
+              <UButton v-if="userStore.isAdmin" type="default" size="sm" @click.stop="handleFollowup(row)">跟进记录</UButton>
+              <UButton v-if="userStore.isAdmin && row.status === 4" type="primary" size="sm" @click.stop="handleReSettlement(row)">重新结算</UButton>
+              <UButton v-if="userStore.isAdmin && row.status !== 4" type="success" size="sm" @click.stop="handleSettlement(row)">结算</UButton>
+              <UButton v-if="userStore.isAdmin" type="danger" size="sm" @click.stop="handleDelete(row)">删除</UButton>
             </div>
           </template>
         </UTable>
@@ -64,6 +70,9 @@
         </UFormItem>
         <UFormItem label="客户电话" prop="customerPhone">
           <UInput v-model="form.customerPhone" />
+        </UFormItem>
+        <UFormItem label="客户类型" prop="customerType">
+          <USelect v-model="form.customerType" :options="customerTypeOptions" placeholder="请选择类型" className="w-full" />
         </UFormItem>
         <UFormItem label="车辆品牌">
           <UInput v-model="form.carBrand" />
@@ -121,13 +130,8 @@
     <!-- 结算对话框 -->
     <UDialog v-model="settlementDialogVisible" title="线索结算" width="500px">
       <UForm ref="settlementFormRef" :model="settlementForm" :rules="settlementFormRules">
-        <UFormItem label="线索" prop="leadId">
-          <div class="flex items-center">
-            <UInput v-model="settlementForm.leadId" placeholder="请选择线索" readonly class="flex-1 rounded-r-none" />
-            <UButton type="primary" class="rounded-l-none px-3" @click="openLeadSelectDialog">
-              <span class="i-lucide-search" />
-            </UButton>
-          </div>
+        <UFormItem label="线索">
+          <UInput v-model="settlementForm.leadInfo" readonly />
         </UFormItem>
         <UFormItem label="利润金额" prop="profit">
           <UInputNumber v-model="settlementForm.profit" :min="0" />
@@ -196,14 +200,188 @@
       type="danger"
       @confirm="confirmDelete"
     />
+
+    <!-- 跟进记录对话框 -->
+    <UDialog v-model="followupDialogVisible" title="跟进记录" width="700px">
+      <div class="mb-4">
+        <UButton type="primary" @click="showAddFollowupDialog">新增跟进记录</UButton>
+      </div>
+      <div class="bg-surface rounded-xl p-4 border border-border">
+        <h4 class="font-semibold mb-3">跟进记录列表</h4>
+        <div v-if="followupList.length === 0" class="text-center py-6 text-text-secondary">
+          暂无跟进记录
+        </div>
+        <div v-else class="space-y-4">
+          <div v-for="item in followupList" :key="item.id" class="p-4 bg-white rounded-lg border border-border">
+            <div class="flex justify-between items-start mb-2">
+              <span class="font-medium text-text-primary">{{ item.operator?.username }}</span>
+              <div class="flex gap-2">
+                <UButton type="ghost" size="sm" @click="handleEditFollowup(item)">编辑</UButton>
+                <UButton type="ghost" size="sm" class="text-danger" @click="handleDeleteFollowup(item)">删除</UButton>
+              </div>
+            </div>
+            <div class="mb-2">
+              <span class="text-sm text-text-secondary">跟进时间：</span>
+              <p class="mt-1 text-text-primary">{{ formatDate(item.followupTime || item.createdAt) }}</p>
+            </div>
+            <div class="mb-2">
+              <span class="text-sm text-text-secondary">跟进内容：</span>
+              <p class="mt-1 text-text-primary">{{ item.followupContent }}</p>
+            </div>
+            <div v-if="item.followupResult" class="mb-2">
+              <span class="text-sm text-text-secondary">跟进结果：</span>
+              <p class="mt-1 text-text-primary">{{ item.followupResult }}</p>
+            </div>
+            <div v-if="item.nextFollowupTime" class="mb-2">
+              <span class="text-sm text-text-secondary">下次跟进时间：</span>
+              <p class="mt-1 text-text-primary">{{ formatDate(item.nextFollowupTime) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </UDialog>
+
+    <!-- 新增/编辑跟进记录对话框 -->
+    <UDialog v-model="addFollowupDialogVisible" :title="isEditFollowup ? '编辑跟进记录' : '新增跟进记录'" width="500px">
+      <UForm ref="followupFormRef" :model="followupForm">
+        <UFormItem label="跟进内容" prop="followupContent">
+          <textarea
+            v-model="followupForm.followupContent"
+            rows="4"
+            class="w-full border border-border rounded-md px-3 py-2 transition-all duration-300 focus:border-primary focus:shadow-[0_0_0_3px_rgba(14,165,233,0.15)] outline-none text-text-primary resize-none"
+          />
+        </UFormItem>
+        <UFormItem label="跟进结果">
+          <textarea
+            v-model="followupForm.followupResult"
+            rows="2"
+            class="w-full border border-border rounded-md px-3 py-2 transition-all duration-300 focus:border-primary focus:shadow-[0_0_0_3px_rgba(14,165,233,0.15)] outline-none text-text-primary resize-none"
+          />
+        </UFormItem>
+        <UFormItem label="这次跟进时间">
+          <input
+            type="datetime-local"
+            v-model="followupForm.followupTime"
+            class="w-full border border-border rounded-md px-3 py-2 transition-all duration-300 focus:border-primary focus:shadow-[0_0_0_3px_rgba(14,165,233,0.15)] outline-none text-text-primary"
+          />
+        </UFormItem>
+        <UFormItem label="下次跟进时间">
+          <input
+            type="datetime-local"
+            v-model="followupForm.nextFollowupTime"
+            class="w-full border border-border rounded-md px-3 py-2 transition-all duration-300 focus:border-primary focus:shadow-[0_0_0_3px_rgba(14,165,233,0.15)] outline-none text-text-primary"
+          />
+        </UFormItem>
+      </UForm>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton type="default" @click="addFollowupDialogVisible = false">取消</UButton>
+          <UButton type="primary" @click="handleFollowupSubmit">确定</UButton>
+        </div>
+      </template>
+    </UDialog>
+
+    <!-- 确认删除跟进记录 -->
+    <UConfirm
+      v-model="deleteFollowupConfirmVisible"
+      title="确认删除"
+      message="确认删除该跟进记录?"
+      type="danger"
+      @confirm="confirmDeleteFollowup"
+    />
+
+    <!-- 详情对话框 -->
+    <UDialog v-model="detailDialogVisible" title="线索详情" width="500px">
+      <div class="space-y-4">
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">客户姓名</span>
+          <span class="text-sm text-text-primary">{{ detailForm.customerName }}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">客户电话</span>
+          <span class="text-sm text-text-primary">{{ detailForm.customerPhone }}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">客户类型</span>
+          <span class="text-sm text-text-primary">{{ getCustomerTypeText(detailForm.customerType) }}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">车辆品牌</span>
+          <span class="text-sm text-text-primary">{{ detailForm.carBrand }}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">车辆型号</span>
+          <span class="text-sm text-text-primary">{{ detailForm.carModel }}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">状态</span>
+          <UTag :type="getStatusType(detailForm.status)">{{ getStatusText(detailForm.status) }}</UTag>
+        </div>
+        <div v-if="userStore.isAdmin" class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">归属经纪人</span>
+          <span class="text-sm text-text-primary">{{ detailForm.agent?.username || '-' }}</span>
+        </div>
+        <div class="flex items-start gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">备注</span>
+          <span class="text-sm text-text-primary">{{ detailForm.notes || '无' }}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">创建时间</span>
+          <span class="text-sm text-text-primary">{{ formatDate(detailForm.createdAt) }}</span>
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton v-if="userStore.isAdmin" type="primary" @click="showEditDialog(detailForm)">编辑</UButton>
+          <UButton type="default" @click="detailDialogVisible = false">关闭</UButton>
+        </div>
+      </template>
+    </UDialog>
+
+    <!-- 编辑对话框 -->
+    <UDialog v-model="editDialogVisible" title="编辑线索" width="500px">
+      <UForm ref="editFormRef" :model="editForm" :rules="editFormRules">
+        <UFormItem label="客户姓名" prop="customerName">
+          <UInput v-model="editForm.customerName" placeholder="请输入客户姓名" />
+        </UFormItem>
+        <UFormItem label="客户电话" prop="customerPhone">
+          <UInput v-model="editForm.customerPhone" placeholder="请输入客户电话" />
+        </UFormItem>
+        <UFormItem label="客户类型" prop="customerType">
+          <USelect v-model="editForm.customerType" :options="customerTypeOptions" placeholder="请选择类型" className="w-full" />
+        </UFormItem>
+        <UFormItem label="车辆品牌">
+          <UInput v-model="editForm.carBrand" placeholder="请输入车辆品牌" />
+        </UFormItem>
+        <UFormItem label="车辆型号" prop="carModel">
+          <UInput v-model="editForm.carModel" placeholder="请输入车辆型号" />
+        </UFormItem>
+        <UFormItem label="归属经纪人" prop="userId">
+          <USelect v-model="editForm.userId" :options="agentOptions" placeholder="请选择经纪人" className="w-full" />
+        </UFormItem>
+        <UFormItem label="备注">
+          <textarea
+            v-model="editForm.notes"
+            rows="3"
+            class="w-full border border-border rounded-md px-3 py-2 transition-all duration-300 focus:border-primary focus:shadow-[0_0_0_3px_rgba(14,165,233,0.15)] outline-none text-text-primary resize-none"
+          />
+        </UFormItem>
+      </UForm>
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton type="default" @click="editDialogVisible = false">取消</UButton>
+          <UButton type="primary" @click="handleEditSubmit">确定</UButton>
+        </div>
+      </template>
+    </UDialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { Message } from '@/composables/useMessage'
-import { getLeadList, createLead, updateLead, deleteLead, exportLeads } from '@/api/lead'
-import { createSettlement } from '@/api/settlement'
+import { getLeadList, createLead, updateLead, deleteLead, exportLeads, createFollowup, getFollowupList, updateFollowup, deleteFollowup } from '@/api/lead'
+import { createSettlement, updateSettlement, getSettlementByLeadId } from '@/api/settlement'
 import { getUserList, getAgentLeads } from '@/api/user'
 import { useUserStore } from '@/store/user'
 import UCard from '@/components/UCard.vue'
@@ -228,13 +406,24 @@ const statusDialogVisible = ref(false)
 const settlementDialogVisible = ref(false)
 const leadDialogVisible = ref(false)
 const deleteConfirmVisible = ref(false)
+const followupDialogVisible = ref(false)
+const addFollowupDialogVisible = ref(false)
+const deleteFollowupConfirmVisible = ref(false)
+const detailDialogVisible = ref(false)
+const editDialogVisible = ref(false)
 const currentRow = ref(null)
+const currentFollowup = ref(null)
 const formRef = ref()
 const statusFormRef = ref()
 const settlementFormRef = ref()
+const followupFormRef = ref()
+const editFormRef = ref()
 const agents = ref([])
 const leadTableData = ref([])
+const followupList = ref([])
 const leadLoading = ref(false)
+const followupLoading = ref(false)
+const isEditFollowup = ref(false)
 
 const searchForm = reactive({ customerName: '', status: '' })
 const leadSearchForm = reactive({ customerName: '', status: '' })
@@ -242,16 +431,23 @@ const leadPagination = reactive({ page: 1, size: 20, total: 0 })
 const pagination = reactive({ page: 1, size: 20, total: 0 })
 
 const form = reactive({
-  customerName: '', customerPhone: '', carBrand: '', carModel: '', userId: '', notes: '',
+  customerName: '', customerPhone: '', customerType: 0, carBrand: '', carModel: '', userId: '', notes: '',
 })
 
 const statusForm = reactive({ status: '', carActualPrice: 0, failReason: '' })
 
-const settlementForm = reactive({ leadId: '', profit: 0, agentShare: 0, remark: '' })
+const settlementForm = reactive({ settlementId: '', leadId: '', leadInfo: '', profit: 0, agentShare: 0, remark: '' })
+
+const followupForm = reactive({ followupContent: '', followupResult: '', followupTime: '', nextFollowupTime: '' })
+
+const detailForm = reactive({ customerName: '', customerPhone: '', customerType: 0, carBrand: '', carModel: '', status: 0, agent: null, notes: '', createdAt: '' })
+
+const editForm = reactive({ id: '', customerName: '', customerPhone: '', customerType: 0, carBrand: '', carModel: '', userId: '', notes: '' })
 
 const formRules = {
   customerName: [{ required: true, message: '请输入客户姓名' }],
   customerPhone: [{ required: true, message: '请输入客户电话' }],
+  customerType: [{ required: true, message: '请选择客户类型' }],
   // customerPhone: [
   //   { required: true, message: '请输入客户电话' },
   //   { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的11位手机号' },
@@ -261,7 +457,6 @@ const formRules = {
 }
 
 const settlementFormRules = {
-  leadId: [{ required: true, message: '请选择线索' }],
   profit: [{ required: true, message: '请输入利润金额' }],
   agentShare: [
     { required: true, message: '请输入经纪人分成' },
@@ -275,6 +470,14 @@ const settlementFormRules = {
       },
     },
   ],
+}
+
+const editFormRules = {
+  customerName: [{ required: true, message: '请输入客户姓名' }],
+  customerPhone: [{ required: true, message: '请输入客户电话' }],
+  customerType: [{ required: true, message: '请选择客户类型' }],
+  carModel: [{ required: true, message: '请输入车辆型号' }],
+  userId: [{ required: true, message: '请选择归属经纪人' }],
 }
 
 const statusMap = {
@@ -295,8 +498,14 @@ const statusOptions = [
   { label: '已失败', value: 5 },
 ]
 
+const customerTypeOptions = [
+  { label: '买家', value: 0 },
+  { label: '卖家', value: 1 },
+]
+
 const getStatusText = (status) => statusMap[status]?.text || status
 const getStatusType = (status) => statusMap[status]?.type || 'info'
+const getCustomerTypeText = (type) => type === 0 ? '买家' : type === 1 ? '卖家' : '-'
 
 const availableStatusOptions = computed(() => {
   if (!currentRow.value) return []
@@ -308,16 +517,24 @@ const availableStatusOptions = computed(() => {
 
 const agentOptions = computed(() => agents.value.map((a) => ({ label: a.username, value: a.userid })))
 
-const columns = [
-  { key: 'customerName', title: '客户姓名' },
-  { key: 'customerPhone', title: '客户电话' },
-  { key: 'carBrand', title: '车辆品牌' },
-  { key: 'carModel', title: '车辆型号' },
-  { key: 'status', title: '状态' },
-  { key: 'agent', title: '归属经纪人' },
-  { key: 'createdAt', title: '创建时间' },
-  { key: 'action', title: '操作', width: '250px' },
-]
+const columns = computed(() => {
+  const baseColumns = [
+    { key: 'customerName', title: '客户姓名' },
+    { key: 'customerPhone', title: '客户电话' },
+    { key: 'customerType', title: '客户类型' },
+    { key: 'carBrand', title: '车辆品牌' },
+    { key: 'carModel', title: '车辆型号' },
+    { key: 'status', title: '状态' },
+    { key: 'createdAt', title: '创建时间' },
+  ]
+  
+  if (userStore.isAdmin) {
+    baseColumns.splice(6, 0, { key: 'agent', title: '归属经纪人' })
+    baseColumns.push({ key: 'action', title: '操作', width: '250px' })
+  }
+  
+  return baseColumns
+})
 
 const leadColumns = [
   { key: 'customerName', title: '客户姓名' },
@@ -376,14 +593,29 @@ const handleUpdateStatus = (row) => {
 }
 
 const handleStatusSubmit = async () => {
-  await updateLead(currentRow.value.id, {
-    status: statusForm.status,
-    carActualPrice: statusForm.carActualPrice,
-    failReason: statusForm.failReason,
-  })
-  Message.success('状态更新成功')
-  statusDialogVisible.value = false
-  loadData()
+  // 验证状态流转是否合法
+  const currentStatus = currentRow.value.status
+  const newStatus = statusForm.status
+  const flow = { 0: [1], 1: [2, 5], 2: [3, 5], 3: [4, 5] }
+  const allowedStatuses = flow[currentStatus] || []
+  
+  if (!allowedStatuses.includes(newStatus)) {
+    Message.error('状态流转非法')
+    return
+  }
+  
+  try {
+    await updateLead(currentRow.value.id, {
+      status: newStatus,
+      carActualPrice: statusForm.carActualPrice,
+      failReason: statusForm.failReason,
+    })
+    Message.success('状态更新成功')
+    statusDialogVisible.value = false
+    loadData()
+  } catch (error) {
+    // 错误已经在request拦截器中处理
+  }
 }
 
 const handleDelete = (row) => {
@@ -399,15 +631,52 @@ const confirmDelete = async () => {
 
 const handleSettlement = (row) => {
   currentRow.value = row
-  Object.assign(settlementForm, { leadId: row.id, profit: 0, agentShare: 0, remark: '' })
+  const leadInfo = `${row.customerName}-${row.customerPhone}-${row.carModel}`
+  Object.assign(settlementForm, { leadId: row.id, leadInfo, profit: 0, agentShare: 0, remark: '' })
+  settlementDialogVisible.value = true
+}
+
+const handleReSettlement = async (row) => {
+  currentRow.value = row
+  const leadInfo = `${row.customerName}-${row.customerPhone}-${row.carModel}`
+  
+  try {
+    // 获取已有的结算记录
+    const res = await getSettlementByLeadId(row.id)
+    if (res.data) {
+      const settlement = res.data
+      console.log('获取到的结算记录:', settlement)
+      Object.assign(settlementForm, {
+        settlementId: settlement.id,
+        leadId: row.id,
+        leadInfo,
+        profit: settlement.profit || 0,
+        agentShare: settlement.agentShare || 0,
+        remark: settlement.remark || ''
+      })
+      console.log('填充后的settlementForm:', settlementForm)
+    }
+  } catch (error) {
+    console.error('获取结算记录失败:', error)
+  }
+  
   settlementDialogVisible.value = true
 }
 
 const handleSettlementSubmit = async () => {
   const valid = await settlementFormRef.value?.validate()
   if (!valid) return
-  await createSettlement(settlementForm)
-  Message.success('结算成功')
+  
+  if (settlementForm.settlementId) {
+    // 更新已有的结算记录
+    await updateSettlement(settlementForm.settlementId, settlementForm)
+    Message.success('重新结算成功')
+  } else {
+    // 创建新的结算记录
+    await createSettlement(settlementForm)
+    Message.success('结算成功')
+  }
+  
   settlementDialogVisible.value = false
   loadData()
 }
@@ -428,6 +697,39 @@ const handleLeadSizeChange = (size) => { leadPagination.size = size; loadLeads()
 const handleLeadPageChange = (page) => { leadPagination.page = page; loadLeads() }
 const handleLeadSelect = (row) => { settlementForm.leadId = row.id; leadDialogVisible.value = false }
 const openLeadSelectDialog = () => { leadPagination.page = 1; loadLeads(); leadDialogVisible.value = true }
+
+const handleRowClick = (row) => {
+  Object.assign(detailForm, row)
+  detailDialogVisible.value = true
+}
+
+const showEditDialog = (row) => {
+  Object.assign(editForm, row)
+  editDialogVisible.value = true
+}
+
+const handleEditSubmit = async () => {
+  const valid = await editFormRef.value?.validate()
+  if (!valid) return
+  try {
+    // 只传递需要更新的字段，避免传递不必要的字段和重复的id
+    const updateData = {
+      customerName: editForm.customerName,
+      customerPhone: editForm.customerPhone,
+      customerType: editForm.customerType,
+      carBrand: editForm.carBrand,
+      carModel: editForm.carModel,
+      userId: editForm.userId,
+      notes: editForm.notes
+    }
+    await updateLead(editForm.id, updateData)
+    Message.success('编辑成功')
+    editDialogVisible.value = false
+    loadData()
+  } catch (error) {
+    // 错误已经在request拦截器中处理，这里不需要重复处理
+  }
+}
 
 const handleExport = async () => {
   try {
@@ -455,6 +757,95 @@ const loadAgents = async () => {
       Message.error('加载经纪人列表失败')
     }
   }
+}
+
+// 跟进记录相关方法
+const handleFollowup = async (row) => {
+  currentRow.value = row
+  await loadFollowupList(row.id)
+  followupDialogVisible.value = true
+}
+
+const loadFollowupList = async (leadId) => {
+  followupLoading.value = true
+  try {
+    const res = await getFollowupList(leadId)
+    followupList.value = res.data.list
+  } catch (err) {
+    Message.error('加载跟进记录失败')
+  } finally {
+    followupLoading.value = false
+  }
+}
+
+const showAddFollowupDialog = () => {
+  isEditFollowup.value = false
+  currentFollowup.value = null
+  const now = new Date().toISOString().slice(0, 16)
+  Object.assign(followupForm, { followupContent: '', followupResult: '', followupTime: now, nextFollowupTime: '' })
+  addFollowupDialogVisible.value = true
+}
+
+const handleEditFollowup = (followup) => {
+  isEditFollowup.value = true
+  currentFollowup.value = followup
+  Object.assign(followupForm, {
+    followupContent: followup.followupContent,
+    followupResult: followup.followupResult,
+    followupTime: followup.followupTime ? new Date(followup.followupTime).toISOString().slice(0, 16) : '',
+    nextFollowupTime: followup.nextFollowupTime ? new Date(followup.nextFollowupTime).toISOString().slice(0, 16) : ''
+  })
+  addFollowupDialogVisible.value = true
+}
+
+const handleFollowupSubmit = async () => {
+  if (!followupForm.followupContent) {
+    Message.error('请输入跟进内容')
+    return
+  }
+  
+  try {
+    if (isEditFollowup.value) {
+      await updateFollowup(currentFollowup.value.id, followupForm)
+      Message.success('更新成功')
+    } else {
+      await createFollowup(currentRow.value.id, followupForm)
+      Message.success('新增成功')
+    }
+    addFollowupDialogVisible.value = false
+    await loadFollowupList(currentRow.value.id)
+  } catch (err) {
+    // 错误已经在request拦截器中处理
+  }
+}
+
+const handleDeleteFollowup = (followup) => {
+  currentFollowup.value = followup
+  deleteFollowupConfirmVisible.value = true
+}
+
+const confirmDeleteFollowup = async () => {
+  try {
+    await deleteFollowup(currentFollowup.value.id)
+    Message.success('删除成功')
+    await loadFollowupList(currentRow.value.id)
+  } catch (err) {
+    // 错误已经在request拦截器中处理
+  }
+}
+
+// 格式化日期
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '' // 检查日期是否有效
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 
 onMounted(() => { loadData(); loadAgents() })

@@ -55,6 +55,7 @@ const createUser = async (userData, operatorUserId) => {
     passwordSecure: rsaEncryptedPassword,
     role: USER_ROLE.AGENT,
     status: USER_STATUS.ENABLED,
+    remark: userData.remark,
   });
 
   // 记录操作日志
@@ -88,6 +89,9 @@ const getUserList = async (filters, pagination) => {
 
   const { count, rows } = await User.findAndCountAll({
     where,
+    attributes: {
+      exclude: ['password', 'passwordSecure'],
+    },
     order: [['created_at', 'DESC']],
     limit: pagination.size,
     offset: (pagination.page - 1) * pagination.size,
@@ -149,19 +153,39 @@ const updateUser = async (id, updateData, operatorUserId) => {
  * 获取经纪人概览数据
  */
 const getUserOverview = async (userId) => {
-  const { Lead, Settlement } = require('../models');
-  const { LEAD_STATUS, SETTLEMENT_STATUS } = require('../utils/constants');
+  const { Lead, Settlement, User } = require('../models');
+  const { LEAD_STATUS, SETTLEMENT_STATUS, USER_ROLE } = require('../utils/constants');
+
+  // 获取用户信息，判断是否为管理员
+  const user = await User.findOne({
+    where: { userid: userId, isDeleted: 0 },
+    attributes: ['role'],
+  });
+
+  const isAdmin = user && user.role === USER_ROLE.ADMIN;
+
+  // 构建查询条件
+  const leadWhere = { isDeleted: 0 };
+  if (!isAdmin) {
+    leadWhere.userId = userId;
+  }
 
   const totalLeads = await Lead.count({
-    where: { userId, isDeleted: 0 },
+    where: leadWhere,
   });
 
   const totalSuccess = await Lead.count({
-    where: { userId, status: LEAD_STATUS.DEAL, isDeleted: 0 },
+    where: {
+      ...leadWhere,
+      status: LEAD_STATUS.DEAL,
+    },
   });
 
   const totalFail = await Lead.count({
-    where: { userId, status: LEAD_STATUS.FAILED, isDeleted: 0 },
+    where: {
+      ...leadWhere,
+      status: LEAD_STATUS.FAILED,
+    },
   });
 
   const pendingAmount = await Settlement.sum('agentShare', {
@@ -173,7 +197,7 @@ const getUserOverview = async (userId) => {
       {
         model: Lead,
         as: 'lead',
-        where: { userId, isDeleted: 0 },
+        where: leadWhere,
         required: true,
         attributes: [],
       },
@@ -189,7 +213,7 @@ const getUserOverview = async (userId) => {
       {
         model: Lead,
         as: 'lead',
-        where: { userId, isDeleted: 0 },
+        where: leadWhere,
         required: true,
         attributes: [],
       },
@@ -283,10 +307,45 @@ const getAgentSettlements = async (userId, filters, pagination) => {
   };
 };
 
+/**
+ * 重置经纪人密码
+ */
+const resetPassword = async (id, operatorUserId) => {
+  const user = await User.findOne({
+    where: { id, isDeleted: 0, role: USER_ROLE.AGENT },
+  });
+
+  if (!user) {
+    return { code: ERROR_CODES.NOT_FOUND, message: '经纪人不存在' };
+  }
+
+  const defaultPassword = '123456';
+  const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+  const rsaEncryptedPassword = rsaEncrypt(defaultPassword);
+
+  await user.update({
+    password: hashedPassword,
+    passwordSecure: rsaEncryptedPassword,
+  });
+
+  // 记录操作日志
+  await OperationLog.create({
+    userId: operatorUserId,
+    userType: 0,
+    operationType: OPERATION_TYPE.UPDATE,
+    operationTarget: OPERATION_TARGET.USER,
+    targetId: user.id,
+    operationContent: `重置经纪人密码: ${user.username}`,
+  });
+
+  return { code: ERROR_CODES.SUCCESS, message: '密码重置成功，默认密码为123456' };
+};
+
 module.exports = {
   createUser,
   getUserList,
   updateUser,
+  resetPassword,
   getUserOverview,
   getAgentLeads,
   getAgentSettlements,

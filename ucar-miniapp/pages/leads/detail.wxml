@@ -1,0 +1,130 @@
+<view class="page p-4" wx:if="{{lead}}">
+  <!-- 基本信息区域 -->
+  <view class="card-glass p-4 mb-4">
+    <view class="flex justify-between items-center py-3 border-b border-solid border-gray-100">
+      <text class="text-sm text-gray-400 w-20 shrink-0">客户姓名</text>
+      <text class="text-base font-semibold text-gray-800">{{lead.customerName}}</text>
+    </view>
+    <view class="flex justify-between items-center py-3 border-b border-solid border-gray-100">
+      <text class="text-sm text-gray-400 w-20 shrink-0">客户电话</text>
+      <text class="text-base text-gray-800">{{lead.displayPhone}}</text>
+    </view>
+    <view class="flex justify-between items-center py-3 border-b border-solid border-gray-100">
+      <text class="text-sm text-gray-400 w-20 shrink-0">客户类型</text>
+      <text class="text-base text-gray-800">{{lead.customerTypeText}}</text>
+    </view>
+    <view class="flex justify-between items-center py-3 border-b border-solid border-gray-100">
+      <text class="text-sm text-gray-400 w-20 shrink-0">车辆品牌</text>
+      <text class="text-base text-gray-800">{{lead.carBrand || '-'}}</text>
+    </view>
+    <view class="flex justify-between items-center py-3 border-b border-solid border-gray-100">
+      <text class="text-sm text-gray-400 w-20 shrink-0">车辆型号</text>
+      <text class="text-base text-gray-800">{{lead.carModel || '-'}}</text>
+    </view>
+    <view class="flex justify-between items-center py-3 border-b border-solid border-gray-100">
+      <text class="text-sm text-gray-400 w-20 shrink-0">状态</text>
+      <view class="tag-{{lead.statusType}}">{{lead.statusText}}</view>
+    </view>
+    <view class="flex justify-between items-center py-3 border-b border-solid border-gray-100" wx:if="{{isAdmin}}">
+      <text class="text-sm text-gray-400 w-20 shrink-0">归属经纪人</text>
+      <text class="text-base text-gray-800">{{lead.agentName || '-'}}</text>
+    </view>
+    <view class="flex justify-between py-3 border-b border-solid border-gray-100">
+      <text class="text-sm text-gray-400 w-20 shrink-0">备注</text>
+      <text class="text-base text-gray-600 flex-1 text-right">{{lead.notes || '-'}}</text>
+    </view>
+    <view class="flex justify-between items-center py-3">
+      <text class="text-sm text-gray-400 w-20 shrink-0">创建时间</text>
+      <text class="text-sm text-gray-500">{{lead.createdAt}}</text>
+    </view>
+  </view>
+
+  <!-- 跟进记录区域（仅管理员） -->
+  <view class="card-glass p-4 mb-4" wx:if="{{isAdmin}}">
+    <view class="flex justify-between items-center mb-4">
+      <text class="text-lg font-bold text-gray-800">跟进记录</text>
+      <view class="flex items-center gap-1 text-primary text-sm" bindtap="onAddFollowup">
+        <view class="i-lucide-plus text-sm"></view>
+        <text>新增</text>
+      </view>
+    </view>
+
+    <view wx:if="{{followups.length > 0}}">
+      <view class="bg-gray-50 rounded-xl p-4 mb-3" wx:for="{{followups}}" wx:key="id">
+        <view class="flex justify-between items-center mb-2">
+          <text class="text-sm font-semibold text-gray-800">{{item.operatorName || '管理员'}}</text>
+          <view class="flex gap-3">
+            <text class="text-sm text-primary" bindtap="onEditFollowup" data-id="{{item.id}}">编辑</text>
+            <text class="text-sm text-red-500" bindtap="onDeleteFollowup" data-id="{{item.id}}">删除</text>
+          </view>
+        </view>
+        <view class="text-xs text-gray-400 mb-1">跟进时间：{{item.followUpTime}}</view>
+        <view class="text-sm text-gray-700 mb-1">{{item.content}}</view>
+        <view class="text-sm text-gray-600" wx:if="{{item.result}}">结果：{{item.result}}</view>
+        <view class="text-xs text-gray-400" wx:if="{{item.nextFollowUpTime}}">下次跟进：{{item.nextFollowUpTime}}</view>
+      </view>
+    </view>
+    <view wx:else class="text-center text-sm text-gray-400 py-6">暂无跟进记录</view>
+  </view>
+
+  <!-- 底部占位 -->
+  <view class="h-24" wx:if="{{isAdmin}}"></view>
+
+  <!-- 底部操作栏（仅管理员） -->
+  <view class="fixed bottom-0 left-0 right-0 bg-white shadow-lg flex items-center justify-around py-3 px-2 z-100" wx:if="{{isAdmin}}" style="padding-bottom: env(safe-area-inset-bottom);">
+    <view class="flex flex-col items-center gap-1 text-sm text-gray-600" bindtap="onEdit">
+      <view class="i-lucide-edit text-lg"></view>
+      <text>编辑</text>
+    </view>
+    <view class="flex flex-col items-center gap-1 text-sm text-primary" bindtap="onUpdateStatus" wx:if="{{lead.status !== 4 && lead.status !== 5}}">
+      <view class="i-lucide-activity text-lg"></view>
+      <text>更新状态</text>
+    </view>
+    <view class="flex flex-col items-center gap-1 text-sm text-success" bindtap="onSettlement" wx:if="{{lead.status === 4 && !hasSettlement}}">
+      <view class="i-lucide-wallet text-lg"></view>
+      <text>结算</text>
+    </view>
+    <view class="flex flex-col items-center gap-1 text-sm text-warning" bindtap="onReSettlement" wx:if="{{lead.status === 4 && hasSettlement}}">
+      <view class="i-lucide-wallet text-lg"></view>
+      <text>重新结算</text>
+    </view>
+    <view class="flex flex-col items-center gap-1 text-sm text-red-500" bindtap="onDelete">
+      <view class="i-lucide-trash-2 text-lg"></view>
+      <text>删除</text>
+    </view>
+  </view>
+
+  <!-- 更新状态 ActionSheet -->
+  <view class="fixed inset-0 bg-black bg-opacity-50 z-200" wx:if="{{showStatusSheet}}" bindtap="closeStatusSheet"></view>
+  <view class="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-300 transition-transform {{showStatusSheet ? 'translate-y-0' : 'translate-y-full'}}" wx:if="{{showStatusSheet}}">
+    <view class="text-center text-base font-semibold text-gray-800 py-4 border-b border-gray-100">选择新状态</view>
+    <view class="py-2" wx:for="{{statusOptions}}" wx:key="value" bindtap="onStatusSelect" data-value="{{item.value}}">
+      <view class="text-center py-4 text-base text-gray-700 active-bg-gray-50">{{item.label}}</view>
+    </view>
+    <view class="text-center py-4 text-base text-gray-400 border-t border-gray-100" bindtap="closeStatusSheet">取消</view>
+  </view>
+
+  <!-- 成交价格输入弹窗 -->
+  <view class="fixed inset-0 bg-black bg-opacity-50 z-200" wx:if="{{showDealInput}}" bindtap="closeDealInput"></view>
+  <view class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl w-4-5 z-300 p-6" wx:if="{{showDealInput}}" style="width: 80%;">
+    <view class="text-lg font-bold text-gray-800 text-center mb-4">填写成交价格</view>
+    <input class="border border-gray-200 rounded-xl px-4 py-3 text-base" type="digit" placeholder="请输入成交价格" value="{{dealPrice}}" bindinput="onDealPriceInput" />
+    <view class="flex gap-3 mt-6">
+      <view class="flex-1 text-center py-3 rounded-xl bg-gray-100 text-gray-600 text-base" bindtap="closeDealInput">取消</view>
+      <view class="flex-1 text-center py-3 rounded-xl btn-primary text-white text-base" bindtap="onConfirmDeal">确定</view>
+    </view>
+  </view>
+
+  <!-- 失败原因输入弹窗 -->
+  <view class="fixed inset-0 bg-black bg-opacity-50 z-200" wx:if="{{showFailInput}}" bindtap="closeFailInput"></view>
+  <view class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl z-300 p-6" wx:if="{{showFailInput}}" style="width: 80%;">
+    <view class="text-lg font-bold text-gray-800 text-center mb-4">填写失败原因</view>
+    <input class="border border-gray-200 rounded-xl px-4 py-3 text-base" placeholder="请输入失败原因" value="{{failReason}}" bindinput="onFailReasonInput" />
+    <view class="flex gap-3 mt-6">
+      <view class="flex-1 text-center py-3 rounded-xl bg-gray-100 text-gray-600 text-base" bindtap="closeFailInput">取消</view>
+      <view class="flex-1 text-center py-3 rounded-xl btn-primary text-white text-base" bindtap="onConfirmFail">确定</view>
+    </view>
+  </view>
+</view>
+
+<view class="flex items-center justify-center h-screen text-gray-400" wx:if="{{loading}}">加载中...</view>

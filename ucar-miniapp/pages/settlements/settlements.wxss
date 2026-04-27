@@ -5,6 +5,7 @@ page {
 
 .page {
   padding: 24rpx;
+  padding-bottom: 140rpx;
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -168,7 +169,34 @@ page {
 }
 
 .time-icon {
-  font-size: 24rpx;
+  font-size: 28rpx;
+}
+
+/* 悬浮新增按钮 */
+.fab-btn {
+  position: fixed;
+  right: 40rpx;
+  bottom: 160rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(14, 165, 233, 0.4);
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.fab-btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 4rpx 12rpx rgba(14, 165, 233, 0.5);
+}
+
+.fab-icon {
+  font-size: 48rpx;
+  color: #fff;
 }
 
 /* 加载和空状态 */

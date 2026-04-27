@@ -4,6 +4,7 @@ Page({
   data: {
     loading: false,
     agreed: false,
+    showModal: false,
   },
 
   onLoad() {
@@ -75,6 +76,7 @@ Page({
 
   async doLogin(code, encryptedData, iv) {
     try {
+      // 先调用微信登录接口获取 openid
       const loginRes = await api.login({ code, encryptedData, iv })
 
       if (loginRes.code !== 0) {
@@ -100,32 +102,14 @@ Page({
   },
 
   showAgreement() {
-    wx.showModal({
-      title: '用户协议',
-      content: '请阅读并同意用户协议以继续登录。',
-      showCancel: true,
-      cancelText: '拒绝',
-      confirmText: '同意',
-      success: (res) => {
-        if (!res.confirm) {
-          wx.showToast({ title: '您需要同意用户协议才能登录', icon: 'none' })
-        }
-      }
+    wx.navigateTo({
+      url: '/pages/agreement/index'
     })
   },
 
   showPrivacy() {
-    wx.showModal({
-      title: '隐私政策',
-      content: '请阅读并同意隐私政策以继续登录。',
-      showCancel: true,
-      cancelText: '拒绝',
-      confirmText: '同意',
-      success: (res) => {
-        if (!res.confirm) {
-          wx.showToast({ title: '您需要同意隐私政策才能登录', icon: 'none' })
-        }
-      }
+    wx.navigateTo({
+      url: '/pages/privacy/index'
     })
   },
 
@@ -136,51 +120,17 @@ Page({
   },
 
   showAgreementTip() {
-    wx.showModal({
-      title: '提示',
-      content: '请先阅读并同意《用户协议》和《隐私政策》',
-      showCancel: true,
-      cancelText: '取消',
-      confirmText: '同意',
-      success: (res) => {
-        if (res.confirm) {
-          this.setData({ agreed: true })
-        }
-      }
-    })
+    this.setData({ showModal: true })
   },
 
-  onPhoneLogin(e) {
-    if (e.detail.errMsg.includes('fail') || e.detail.errMsg.includes('cancel')) {
-      wx.showToast({ title: '请授权手机号以继续', icon: 'none' })
-      return
-    }
-
-    this.processLogin(e)
+  hideModal() {
+    this.setData({ showModal: false })
   },
 
-  processLogin(e) {
-    const { encryptedData, iv } = e.detail
-    if (!encryptedData || !iv) {
-      wx.showToast({ title: '获取手机号失败，请重试', icon: 'none' })
-      return
-    }
-
-    this.setData({ loading: true })
-
-    wx.login({
-      success: (res) => {
-        if (res.code) {
-          this.doLogin(res.code, encryptedData, iv)
-        } else {
-          wx.showToast({ title: '微信登录失败', icon: 'none' })
-          this.setData({ loading: false })
-        }
-      },
-      fail: () => {
-        wx.showToast({ title: '微信登录失败', icon: 'none' })
-        this.setData({ loading: false })
-      },
+  agreeAndClose() {
+    this.setData({ 
+      showModal: false,
+      agreed: true 
     })
   },
 })

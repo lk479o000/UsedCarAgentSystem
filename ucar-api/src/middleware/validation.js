@@ -42,15 +42,23 @@ const passwordSchema = Joi.object({
 const createLeadSchema = Joi.object({
   customerName: Joi.string().max(50).required(),
   customerPhone: Joi.string().max(20).required(),
+  customerType: Joi.number().integer().valid(0, 1).required(),
   carBrand: Joi.string().max(50).allow(null, ''),
   carModel: Joi.string().max(50).required(),
   notes: Joi.string().max(500).allow(null, ''),
   userId: Joi.string().max(15).required(),
 });
 
-// 修改线索状态校验schema
+// 修改线索校验schema
 const updateLeadSchema = Joi.object({
-  status: Joi.number().integer().min(0).max(5).required(),
+  customerName: Joi.string().max(50).allow(null, ''),
+  customerPhone: Joi.string().max(20).allow(null, ''),
+  customerType: Joi.number().integer().valid(0, 1).allow(null),
+  carBrand: Joi.string().max(50).allow(null, ''),
+  carModel: Joi.string().max(50).allow(null, ''),
+  notes: Joi.string().max(500).allow(null, ''),
+  userId: Joi.string().max(15).allow(null, ''),
+  status: Joi.number().integer().min(0).max(5).allow(null),
   failReason: Joi.string().max(500).allow(null, ''),
   carActualPrice: Joi.number().integer().min(0).allow(null),
 });
@@ -65,9 +73,11 @@ const createSettlementSchema = Joi.object({
 
 // 更新结算状态校验schema
 const updateSettlementSchema = Joi.object({
-  status: Joi.number().integer().valid(0, 1).required(),
+  status: Joi.number().integer().valid(0, 1).allow(null),
   settledAt: Joi.date().allow(null),
   remark: Joi.string().max(500).allow(null, ''),
+  profit: Joi.number().integer().min(0).allow(null),
+  agentShare: Joi.number().integer().min(0).allow(null),
 });
 
 // 新增经纪人校验schema

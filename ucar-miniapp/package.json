@@ -9,7 +9,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.103",
     "@unocss/preset-icons": "^66.6.8",

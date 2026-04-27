@@ -168,4 +168,88 @@ router.get('/export', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * 新增跟进记录
+ * POST /api/v1/lead/:leadId/followup
+ */
+router.post('/:leadId/followup', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const followupData = {
+      ...req.body,
+      leadId: req.params.leadId,
+    };
+    const result = await leadService.createFollowup(followupData, req.user.userid);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, result.data);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
+/**
+ * 获取跟进记录列表
+ * GET /api/v1/lead/:leadId/followup
+ */
+router.get('/:leadId/followup', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const result = await leadService.getFollowupList(req.params.leadId);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, result.data);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
+/**
+ * 查看跟进记录详情
+ * GET /api/v1/lead/followup/:id
+ */
+router.get('/followup/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const result = await leadService.getFollowupDetail(req.params.id);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, result.data);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
+/**
+ * 更新跟进记录
+ * PUT /api/v1/lead/followup/:id
+ */
+router.put('/followup/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const result = await leadService.updateFollowup(req.params.id, req.body, req.user.userid);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, null, result.message);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
+/**
+ * 删除跟进记录
+ * DELETE /api/v1/lead/followup/:id
+ */
+router.delete('/followup/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const result = await leadService.deleteFollowup(req.params.id, req.user.userid);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, null, result.message);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
 module.exports = router;
