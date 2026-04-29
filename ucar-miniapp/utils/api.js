@@ -2,8 +2,13 @@ const request = require('./request')
 
 module.exports = {
   login: (data) => request.post('/auth/login/wechat', data),
+  loginByAccount: (data) => request.post('/auth/login', data),
+  getCaptcha: () => request.get('/auth/captcha'),
+  decryptPhone: (data) => request.post('/auth/decrypt-phone', data),
 
   getOverview: () => request.get('/user/overview'),
+  getMe: () => request.get('/user/me'),
+  updateMe: (data) => request.put('/user/me', data),
 
   getLeads: (params) => request.get('/user/lead', params),
   getAdminLeads: (params) => request.get('/lead', params),

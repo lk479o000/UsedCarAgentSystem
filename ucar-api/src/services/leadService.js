@@ -322,7 +322,7 @@ const createFollowup = async (followupData, operatorUserId) => {
       followupContent: followupData.followupContent,
       followupResult: followupData.followupResult,
       followupTime: followupData.followupTime || new Date(),
-      nextFollowupTime: followupData.nextFollowupTime,
+      nextFollowupTime: followupData.nextFollowupTime || null,
       operatorUserId: operatorUserId,
     });
 
@@ -438,7 +438,7 @@ const updateFollowup = async (id, updateData, operatorUserId) => {
       followupContent: updateData.followupContent,
       followupResult: updateData.followupResult,
       followupTime: updateData.followupTime,
-      nextFollowupTime: updateData.nextFollowupTime,
+      nextFollowupTime: updateData.nextFollowupTime || null,
     });
 
     // 记录操作日志

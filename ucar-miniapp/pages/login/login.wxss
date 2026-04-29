@@ -302,6 +302,53 @@ page {
   font-weight: 500;
 }
 
+/* 开发/体验版：账号密码登录入口 */
+.dev-entry {
+  margin-top: 26rpx;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.dev-link {
+  font-size: 26rpx;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+/* 暂不登录按钮（次级操作） */
+.skip-btn {
+  width: 520rpx;
+  height: 76rpx;
+  line-height: normal;
+  margin-top: 28rpx;
+  border-radius: 38rpx;
+  border: 2rpx solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+  color: rgba(15, 23, 42, 0.78);
+  font-size: 26rpx;
+  font-weight: 600;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  box-shadow:
+    0 10rpx 30rpx rgba(15, 23, 42, 0.06),
+    inset 0 0 0 1rpx rgba(255, 255, 255, 0.55);
+}
+
+.skip-btn::after {
+  border: none;
+}
+
+.skip-btn-hover,
+.skip-btn:active {
+  transform: scale(0.99);
+  background: rgba(255, 255, 255, 0.36);
+}
+
 /* 动画效果 */
 @keyframes fadeIn {
   from {
@@ -363,6 +410,14 @@ page {
     line-height: 88rpx;
     font-size: 30rpx;
     border-radius: 44rpx;
+  }
+
+  .skip-btn {
+    width: 520rpx;
+    height: 72rpx;
+    line-height: normal;
+    border-radius: 36rpx;
+    font-size: 25rpx;
   }
 }
 

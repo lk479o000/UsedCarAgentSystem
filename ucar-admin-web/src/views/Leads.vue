@@ -14,12 +14,16 @@
       <!-- 搜索表单 -->
       <div class="flex flex-wrap items-end gap-4 mb-5 p-5 bg-surface rounded-xl shadow-sm border border-border">
         <div class="flex items-end gap-2">
-          <label class="text-sm font-medium text-text-primary whitespace-nowrap mb-2">客户姓名</label>
-          <UInput v-model="searchForm.customerName" placeholder="请输入" class="w-40" />
+          <label class="text-sm font-medium text-text-primary whitespace-nowrap mb-2">客户</label>
+          <UInput v-model="searchForm.customerKeyword" placeholder="客户姓名/手机号" class="w-44" />
+        </div>
+        <div v-if="userStore.isAdmin" class="flex items-end gap-2">
+          <label class="text-sm font-medium text-text-primary whitespace-nowrap mb-2">经纪人</label>
+          <UInput v-model="searchForm.agentKeyword" placeholder="经纪人姓名/手机号" class="w-44" />
         </div>
         <div class="flex items-end gap-2">
           <label class="text-sm font-medium text-text-primary whitespace-nowrap mb-2">状态</label>
-          <USelect v-model="searchForm.status" :options="statusOptions" placeholder="请选择" className="w-24" />
+          <USelect v-model="searchForm.status" :options="searchStatusOptions" placeholder="请选择" className="w-24" />
         </div>
         <div class="flex gap-2">
           <UButton type="primary" @click="handleSearch">查询</UButton>
@@ -243,7 +247,7 @@
 
     <!-- 新增/编辑跟进记录对话框 -->
     <UDialog v-model="addFollowupDialogVisible" :title="isEditFollowup ? '编辑跟进记录' : '新增跟进记录'" width="500px">
-      <UForm ref="followupFormRef" :model="followupForm">
+      <UForm ref="followupFormRef" :model="followupForm" :rules="followupFormRules">
         <UFormItem label="跟进内容" prop="followupContent">
           <textarea
             v-model="followupForm.followupContent"
@@ -258,14 +262,14 @@
             class="w-full border border-border rounded-md px-3 py-2 transition-all duration-300 focus:border-primary focus:shadow-[0_0_0_3px_rgba(14,165,233,0.15)] outline-none text-text-primary resize-none"
           />
         </UFormItem>
-        <UFormItem label="这次跟进时间">
+        <UFormItem label="这次跟进时间" prop="followupTime">
           <input
             type="datetime-local"
             v-model="followupForm.followupTime"
             class="w-full border border-border rounded-md px-3 py-2 transition-all duration-300 focus:border-primary focus:shadow-[0_0_0_3px_rgba(14,165,233,0.15)] outline-none text-text-primary"
           />
         </UFormItem>
-        <UFormItem label="下次跟进时间">
+        <UFormItem label="下次跟进时间（可选）">
           <input
             type="datetime-local"
             v-model="followupForm.nextFollowupTime"
@@ -425,7 +429,7 @@ const leadLoading = ref(false)
 const followupLoading = ref(false)
 const isEditFollowup = ref(false)
 
-const searchForm = reactive({ customerName: '', status: '' })
+const searchForm = reactive({ customerKeyword: '', agentKeyword: '', status: '' })
 const leadSearchForm = reactive({ customerName: '', status: '' })
 const leadPagination = reactive({ page: 1, size: 20, total: 0 })
 const pagination = reactive({ page: 1, size: 20, total: 0 })
@@ -439,6 +443,11 @@ const statusForm = reactive({ status: '', carActualPrice: 0, failReason: '' })
 const settlementForm = reactive({ settlementId: '', leadId: '', leadInfo: '', profit: 0, agentShare: 0, remark: '' })
 
 const followupForm = reactive({ followupContent: '', followupResult: '', followupTime: '', nextFollowupTime: '' })
+
+const followupFormRules = {
+  followupContent: [{ required: true, message: '请输入跟进内容' }],
+  followupTime: [{ required: true, message: '请选择这次跟进时间' }],
+}
 
 const detailForm = reactive({ customerName: '', customerPhone: '', customerType: 0, carBrand: '', carModel: '', status: 0, agent: null, notes: '', createdAt: '' })
 
@@ -497,6 +506,7 @@ const statusOptions = [
   { label: '已成交', value: 4 },
   { label: '已失败', value: 5 },
 ]
+const searchStatusOptions = [{ label: '全部', value: '' }, ...statusOptions]
 
 const customerTypeOptions = [
   { label: '买家', value: 0 },
@@ -548,11 +558,24 @@ const leadColumns = [
 const loadData = async () => {
   loading.value = true
   try {
+    const customerKeyword = (searchForm.customerKeyword || '').trim()
+    const agentKeyword = (searchForm.agentKeyword || '').trim()
+    const keywordParams = {}
+    if (customerKeyword) {
+      Object.assign(keywordParams, /^\d{3,}$/.test(customerKeyword)
+        ? { customer_phone: customerKeyword }
+        : { customer_name: customerKeyword })
+    }
+    if (userStore.isAdmin && agentKeyword) {
+      Object.assign(keywordParams, /^\d{3,}$/.test(agentKeyword)
+        ? { agent_phone: agentKeyword }
+        : { agent_name: agentKeyword })
+    }
     let res
     if (userStore.isAdmin) {
-      res = await getLeadList({ ...searchForm, page: pagination.page, size: pagination.size })
+      res = await getLeadList({ status: searchForm.status, ...keywordParams, page: pagination.page, size: pagination.size })
     } else {
-      res = await getAgentLeads({ status: searchForm.status, page: pagination.page, size: pagination.size })
+      res = await getAgentLeads({ status: searchForm.status, ...keywordParams, page: pagination.page, size: pagination.size })
     }
     tableData.value = res.data.list
     pagination.total = res.data.pagination.total
@@ -562,7 +585,12 @@ const loadData = async () => {
 }
 
 const handleSearch = () => { pagination.page = 1; loadData() }
-const resetSearch = () => { searchForm.customerName = ''; searchForm.status = ''; handleSearch() }
+const resetSearch = () => {
+  searchForm.customerKeyword = ''
+  searchForm.agentKeyword = ''
+  searchForm.status = ''
+  handleSearch()
+}
 const handleSizeChange = (size) => { pagination.size = size; loadData() }
 const handlePageChange = (page) => { pagination.page = page; loadData() }
 
@@ -733,7 +761,20 @@ const handleEditSubmit = async () => {
 
 const handleExport = async () => {
   try {
-    const blob = await exportLeads(searchForm)
+    const customerKeyword = (searchForm.customerKeyword || '').trim()
+    const agentKeyword = (searchForm.agentKeyword || '').trim()
+    const keywordParams = {}
+    if (customerKeyword) {
+      Object.assign(keywordParams, /^\d{3,}$/.test(customerKeyword)
+        ? { customer_phone: customerKeyword }
+        : { customer_name: customerKeyword })
+    }
+    if (userStore.isAdmin && agentKeyword) {
+      Object.assign(keywordParams, /^\d{3,}$/.test(agentKeyword)
+        ? { agent_phone: agentKeyword }
+        : { agent_name: agentKeyword })
+    }
+    const blob = await exportLeads({ status: searchForm.status, ...keywordParams })
     const url = window.URL.createObjectURL(new Blob([blob]))
     const link = document.createElement('a')
     link.href = url
@@ -799,10 +840,8 @@ const handleEditFollowup = (followup) => {
 }
 
 const handleFollowupSubmit = async () => {
-  if (!followupForm.followupContent) {
-    Message.error('请输入跟进内容')
-    return
-  }
+  const valid = await followupFormRef.value.validate()
+  if (!valid) return
   
   try {
     if (isEditFollowup.value) {

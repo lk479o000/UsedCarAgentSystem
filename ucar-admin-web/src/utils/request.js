@@ -46,7 +46,13 @@ request.interceptors.response.use(
   },
   (error) => {
     // 网络错误处理
-    const errorMessage = error.response?.data?.message || error.message || '网络错误'
+    let errorMessage = error.response?.data?.message || error.message || '网络错误'
+    
+    // 处理HTTP状态码错误
+    if (error.response?.status === 429) {
+      errorMessage = '请求过于频繁，请稍后再试'
+    }
+    
     Message.error(errorMessage)
     return Promise.reject(error)
   }

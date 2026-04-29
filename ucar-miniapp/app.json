@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/login/login",
+    "pages/account-login/account-login",
     "pages/index/index",
     "pages/leads/leads",
     "pages/leads/detail",
@@ -10,6 +11,7 @@
     "pages/settlements/detail",
     "pages/settlements/form",
     "pages/profile/profile",
+    "pages/profile/password/password",
     "pages/bind-phone/bind-phone",
     "pages/agreement/index",
     "pages/privacy/index"
@@ -19,9 +21,10 @@
     "navigationBarBackgroundColor": "#0F172A",
     "navigationBarTitleText": "二手车经纪人",
     "navigationBarTextStyle": "white",
-    "backgroundColor": "#F1F5F9"
+    "backgroundColor": "#061022"
   },
   "tabBar": {
+    "custom": true,
     "color": "#94A3B8",
     "selectedColor": "#0EA5E9",
     "backgroundColor": "#FFFFFF",

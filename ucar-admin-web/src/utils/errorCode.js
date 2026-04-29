@@ -23,7 +23,7 @@ export const errorCodeMap = {
 
 // 根据错误码获取错误消息
 export function getErrorMessage(code, defaultMessage = '操作失败') {
-  return errorCodeMap[code] || defaultMessage
+  return defaultMessage || errorCodeMap[code] || '操作失败'
 }
 
 // 根据错误码获取消息类型

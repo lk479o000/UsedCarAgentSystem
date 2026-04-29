@@ -1,12 +1,32 @@
-<view class="page p-4">
+<view class="aura-page with-tabbar">
+  <view class="aura-bg"></view>
+  <view class="aura-content">
+  <guest-tip wx:if="{{isGuest}}" tip-text="登录后可查看真实线索与结算数据" />
+
   <!-- 统计卡片 -->
   <view class="grid grid-cols-2 gap-4">
-    <view class="card-glass stat-card" wx:for="{{statsList}}" wx:key="key">
-      <view class="stat-icon {{item.iconClass}}">
-        <view class="i-lucide-list"></view>
+    <view
+      class="card-glass stat-card stat-card--{{item.tone}} {{index === statsList.length - 1 ? 'stat-card--wide' : ''}}"
+      wx:for="{{statsList}}"
+      wx:key="key"
+      bindtap="onStatTap"
+      data-key="{{item.key}}"
+      data-target="{{item.target}}"
+      data-filter="{{item.filter}}"
+    >
+      <view class="stat-bg"></view>
+      <view class="stat-main">
+        <view class="stat-kpi">
+          <view class="stat-value">{{item.displayValue}}</view>
+          <view class="stat-label">{{item.title}}</view>
+        </view>
+        <view class="stat-side">
+          <view class="stat-icon {{item.iconClass}}">
+            <view class="{{item.icon}}"></view>
+          </view>
+          <view class="i-lucide-chevron-right stat-chevron"></view>
+        </view>
       </view>
-      <view class="stat-value">{{item.value}}</view>
-      <view class="stat-label">{{item.title}}</view>
     </view>
   </view>
 
@@ -48,7 +68,9 @@
     </view>
     <view wx:else class="empty">
       <text class="empty-icon">📭</text>
-      <text>暂无线索</text>
+      <text wx:if="{{isGuest}}">登录后可查看</text>
+      <text wx:else>暂无线索</text>
     </view>
+  </view>
   </view>
 </view>

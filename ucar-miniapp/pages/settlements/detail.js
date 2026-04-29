@@ -13,7 +13,7 @@ Page({
   },
 
   onLoad(options) {
-    if (!checkLogin()) return
+    if (!checkLogin({ redirect: true })) return
     const userInfo = wx.getStorageSync('userInfo')
     if (userInfo) {
       const parsed = JSON.parse(userInfo)
@@ -32,6 +32,20 @@ Page({
       const s = res.data
       s.statusText = s.status === 1 ? '已结算' : '待结算'
       s.statusType = s.status === 1 ? 'success' : 'warning'
+      s.carText = `${s.lead?.carBrand || ''} ${s.lead?.carModel || ''}`.trim() || '—'
+      
+      s.displayCustomerPhone = this.data.isAdmin
+        ? s.lead?.customerPhone
+        : s.lead?.customerPhone
+          ? s.lead.customerPhone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
+          : ''
+      
+      s.displayAgentPhone = this.data.isAdmin
+        ? s.lead?.agentPhone
+        : s.lead?.agentPhone
+          ? s.lead.agentPhone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
+          : ''
+      
       this.setData({ settlement: s })
     } catch (err) {
       console.error('加载结算详情失败:', err)
@@ -91,4 +105,6 @@ Page({
   closeSettleDialog() {
     this.setData({ showSettleDialog: false })
   },
+
+  noop() {},
 })

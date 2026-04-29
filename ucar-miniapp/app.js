@@ -4,18 +4,14 @@ App({
   globalData: {
     userInfo: null,
     token: null,
+    // 线上：Nginx 对外提供 https://sjmcpitt.com/api/v1/*
     baseUrl: 'http://localhost:8902',
+    // baseUrl: 'https://sjmcpitt.com',
   },
   onLaunch() {
     const token = wx.getStorageSync('token')
     if (token) {
       this.globalData.token = token
-    }
-
-    // 全局检查登录状态，未登录则跳转到登录页（非 tabBar 页面）
-    const pages = getCurrentPages()
-    if (pages.length === 0) {
-      checkLogin()
     }
   },
 })

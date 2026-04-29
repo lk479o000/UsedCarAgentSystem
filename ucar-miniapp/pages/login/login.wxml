@@ -45,7 +45,15 @@
       <text class="agreement-text">和</text>
       <text class="agreement-link" bindtap="showPrivacy">《隐私政策》</text>
     </view>
+
+    <view class="dev-entry">
+      <text class="dev-link" bindtap="goToAccountLogin">使用账号密码登录</text>
+    </view>
   </view>
+
+  <button class="skip-btn" bindtap="skipLogin" hover-class="skip-btn-hover">
+    暂不登录，先随便看看
+  </button>
 
   <!-- 自定义弹窗 -->
   <view class="modal-container" wx:if="{{showModal}}">

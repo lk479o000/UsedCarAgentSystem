@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "guest-tip": "/components/guest-tip/guest-tip"
+  },
   "navigationBarTitleText": "个人中心"
 }

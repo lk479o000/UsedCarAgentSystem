@@ -1,6 +1,8 @@
 const api = require('../../utils/api')
 const { checkLogin } = require('../../utils/auth')
 
+const SELECTED_LEAD_KEY = 'selectedLeadForSettlement'
+
 Page({
   data: {
     id: '',
@@ -15,7 +17,7 @@ Page({
   },
 
   onLoad(options) {
-    if (!checkLogin()) return
+    if (!checkLogin({ redirect: true })) return
     const userInfo = wx.getStorageSync('userInfo')
     if (userInfo) {
       const parsed = JSON.parse(userInfo)
@@ -37,6 +39,19 @@ Page({
       this.setData({ leadId: options.leadId })
       this.loadLeadInfo(options.leadId)
     }
+  },
+
+  onShow() {
+    try {
+      const raw = wx.getStorageSync(SELECTED_LEAD_KEY)
+      if (!raw) return
+      wx.removeStorageSync(SELECTED_LEAD_KEY)
+      const selected = JSON.parse(raw)
+      if (selected?.id && !this.data.isEdit) {
+        this.setData({ leadId: String(selected.id), leadName: selected.name || '' })
+        this.loadLeadInfo(String(selected.id))
+      }
+    } catch (e) {}
   },
 
   async loadLeadInfo(leadId) {

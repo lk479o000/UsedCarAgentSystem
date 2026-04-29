@@ -24,7 +24,7 @@ Page({
   },
 
   onLoad(options) {
-    if (!checkLogin()) return
+    if (!checkLogin({ redirect: true })) return
     const userInfo = wx.getStorageSync('userInfo')
     if (userInfo) {
       const parsed = JSON.parse(userInfo)

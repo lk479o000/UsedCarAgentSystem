@@ -3,63 +3,228 @@ const { checkLogin } = require('../../utils/auth')
 
 Page({
   data: {
+    isGuest: false,
     userInfo: null,
-    isAdmin: false,
-    showPasswordModal: false,
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-    changingPassword: false,
+    form: {
+      avatarUrl: '',
+      nickname: '',
+      phone: '',
+      username: '',
+    },
+    roleText: '-',
+    statusText: '-',
+    statusClass: '',
+    saving: false,
+    syncingWxProfile: false,
+    syncingPhone: false,
   },
 
   onShow() {
-    if (!checkLogin()) return
-    const userInfo = wx.getStorageSync('userInfo')
-    if (userInfo) {
-      const parsed = JSON.parse(userInfo)
-      this.setData({ userInfo: parsed, isAdmin: parsed.role === 0 })
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 3 })
     }
+    if (!checkLogin()) {
+      this.setData({ isGuest: true, userInfo: null })
+      return
+    }
+
+    const userInfoStr = wx.getStorageSync('userInfo')
+    if (userInfoStr) {
+      const parsed = JSON.parse(userInfoStr)
+      this.applyUserInfo(parsed)
+    }
+
+    this.refreshMe()
   },
 
   goToAgreement() { wx.navigateTo({ url: '/pages/agreement/index' }) },
   goToPrivacy() { wx.navigateTo({ url: '/pages/privacy/index' }) },
-  goToBindPhone() { wx.navigateTo({ url: '/pages/bind-phone/bind-phone' }) },
+  goLogin() { wx.navigateTo({ url: '/pages/login/login' }) },
 
-  showChangePassword() {
-    this.setData({ showPasswordModal: true, oldPassword: '', newPassword: '', confirmPassword: '' })
+  goChangePassword() {
+    wx.navigateTo({ url: '/pages/profile/password/password' })
   },
 
-  closePasswordModal() {
-    this.setData({ showPasswordModal: false })
+  applyUserInfo(userInfo) {
+    const roleText = userInfo.role === 0 ? '管理员' : '经纪人'
+    const statusText = userInfo.status === 1 ? '正常' : '禁用'
+    const statusClass = userInfo.status === 1 ? 'ok' : 'bad'
+
+    this.setData({
+      isGuest: false,
+      userInfo,
+      roleText,
+      statusText,
+      statusClass,
+      form: {
+        avatarUrl: userInfo.avatarUrl || '',
+        nickname: userInfo.nickname || '',
+        phone: userInfo.phone || '',
+        username: userInfo.username || '',
+      },
+    })
   },
 
-  onOldPasswordInput(e) { this.setData({ oldPassword: e.detail.value }) },
-  onNewPasswordInput(e) { this.setData({ newPassword: e.detail.value }) },
-  onConfirmPasswordInput(e) { this.setData({ confirmPassword: e.detail.value }) },
-
-  async onChangePassword() {
-    const { oldPassword, newPassword, confirmPassword } = this.data
-    if (!oldPassword) { wx.showToast({ title: '请输入原密码', icon: 'none' }); return }
-    if (!newPassword) { wx.showToast({ title: '请输入新密码', icon: 'none' }); return }
-    if (newPassword.length < 8) { wx.showToast({ title: '新密码至少8位', icon: 'none' }); return }
-    if (!/[a-zA-Z]/.test(newPassword) || !/\d/.test(newPassword)) {
-      wx.showToast({ title: '密码需包含字母和数字', icon: 'none' }); return
-    }
-    if (newPassword !== confirmPassword) { wx.showToast({ title: '两次密码不一致', icon: 'none' }); return }
-
-    this.setData({ changingPassword: true })
+  async refreshMe() {
+    if (!checkLogin()) return
     try {
-      await api.changePassword({ oldPassword, newPassword })
-      wx.showToast({ title: '密码修改成功', icon: 'success' })
-      this.setData({ showPasswordModal: false })
+      const res = await api.getMe()
+      const userInfo = res.data
+      wx.setStorageSync('userInfo', JSON.stringify({
+        ...JSON.parse(wx.getStorageSync('userInfo') || '{}'),
+        ...userInfo,
+        avatarUrl: userInfo.headimgurl || userInfo.avatarUrl,
+      }))
+      const merged = JSON.parse(wx.getStorageSync('userInfo'))
+      this.applyUserInfo(merged)
     } catch (err) {
-      console.error('修改密码失败:', err)
-    } finally {
-      this.setData({ changingPassword: false })
+      // 静默失败：不影响页面展示
+      console.warn('refreshMe failed:', err)
     }
+  },
+
+  onAvatarUrlInput(e) {
+    this.setData({ 'form.avatarUrl': e.detail.value })
+  },
+
+  onNicknameInput(e) {
+    this.setData({ 'form.nickname': e.detail.value })
+  },
+
+  onUsernameInput(e) {
+    this.setData({ 'form.username': e.detail.value })
+  },
+
+  async syncWechatProfile() {
+    if (!checkLogin()) {
+      wx.showToast({ title: '登录后可使用', icon: 'none' })
+      return
+    }
+
+    this.setData({ syncingWxProfile: true })
+    try {
+      const res = await new Promise((resolve, reject) => {
+        wx.getUserProfile({
+          desc: '用于同步头像与昵称',
+          success: resolve,
+          fail: reject,
+        })
+      })
+      const { avatarUrl, nickName } = res.userInfo || {}
+      this.setData({
+        'form.avatarUrl': avatarUrl || this.data.form.avatarUrl,
+        'form.nickname': nickName || this.data.form.nickname,
+      })
+      await this.saveProfile()
+    } catch (err) {
+      if (String(err && err.errMsg || '').includes('cancel')) {
+        wx.showToast({ title: '已取消同步', icon: 'none' })
+      } else {
+        console.error('syncWechatProfile failed:', err)
+      }
+    } finally {
+      this.setData({ syncingWxProfile: false })
+    }
+  },
+
+  async saveProfile() {
+    if (!checkLogin()) {
+      wx.showToast({ title: '登录后可使用', icon: 'none' })
+      return
+    }
+
+    const { avatarUrl, nickname, username } = this.data.form
+    if (!username) {
+      wx.showToast({ title: '请输入姓名', icon: 'none' })
+      return
+    }
+
+    if (avatarUrl && !/^https?:\/\//i.test(avatarUrl)) {
+      wx.showToast({ title: '头像 URL 需以 http(s) 开头', icon: 'none' })
+      return
+    }
+
+    this.setData({ saving: true })
+    try {
+      const res = await api.updateMe({ username, nickname, avatarUrl })
+      const newInfo = res.data && res.data.userInfo ? res.data.userInfo : null
+      if (newInfo) {
+        wx.setStorageSync('userInfo', JSON.stringify({ ...this.data.userInfo, ...newInfo }))
+        this.applyUserInfo(JSON.parse(wx.getStorageSync('userInfo')))
+      }
+      wx.showToast({ title: '已保存', icon: 'success' })
+    } catch (err) {
+      console.error('saveProfile failed:', err)
+    } finally {
+      this.setData({ saving: false })
+    }
+  },
+
+  onGetPhoneNumber(e) {
+    if (!checkLogin()) {
+      wx.showToast({ title: '登录后可使用', icon: 'none' })
+      return
+    }
+
+    if (!e.detail || !e.detail.encryptedData || !e.detail.iv) {
+      wx.showToast({ title: '未获取到手机号授权', icon: 'none' })
+      return
+    }
+
+    this.setData({ syncingPhone: true })
+
+    wx.login({
+      success: async (res) => {
+        if (!res.code) {
+          wx.showToast({ title: '微信登录失败', icon: 'none' })
+          this.setData({ syncingPhone: false })
+          return
+        }
+
+        try {
+          const dec = await api.decryptPhone({
+            code: res.code,
+            encryptedData: e.detail.encryptedData,
+            iv: e.detail.iv,
+          })
+          const phone = (dec.data && (dec.data.phoneNumber || dec.data.phone)) || ''
+          if (!phone) {
+            wx.showToast({ title: '同步手机号失败', icon: 'none' })
+            return
+          }
+
+          const bindRes = await api.bindPhone({
+            phone,
+            nickname: this.data.form.nickname,
+            avatarUrl: this.data.form.avatarUrl,
+          })
+
+          if (bindRes.data && bindRes.data.token) {
+            wx.setStorageSync('token', bindRes.data.token)
+          }
+          if (bindRes.data && bindRes.data.userInfo) {
+            wx.setStorageSync('userInfo', JSON.stringify(bindRes.data.userInfo))
+            this.applyUserInfo(bindRes.data.userInfo)
+          }
+          wx.showToast({ title: '手机号已同步', icon: 'success' })
+        } catch (err) {
+          console.error('sync phone failed:', err)
+        } finally {
+          this.setData({ syncingPhone: false })
+        }
+      },
+      fail: () => {
+        wx.showToast({ title: '微信登录失败', icon: 'none' })
+        this.setData({ syncingPhone: false })
+      },
+    })
   },
 
   logout() {
+    if (!checkLogin()) {
+      wx.navigateTo({ url: '/pages/login/login' })
+      return
+    }
     wx.showModal({
       title: '提示',
       content: '确认退出登录?',

@@ -1,9 +1,10 @@
 page {
-  background: #F1F5F9;
+  background: transparent;
 }
 
 .page {
   animation: fadeIn 0.4s ease-out;
+  padding-bottom: 160rpx;
 }
 
 @keyframes fadeIn {

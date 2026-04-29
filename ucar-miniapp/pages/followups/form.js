@@ -14,7 +14,7 @@ Page({
   },
 
   onLoad(options) {
-    if (!checkLogin()) return
+    if (!checkLogin({ redirect: true })) return
     const userInfo = wx.getStorageSync('userInfo')
     if (userInfo) {
       const parsed = JSON.parse(userInfo)
@@ -62,6 +62,10 @@ Page({
   async onSubmit() {
     if (!this.data.content) {
       wx.showToast({ title: '请输入跟进内容', icon: 'none' })
+      return
+    }
+    if (!this.data.followUpTime) {
+      wx.showToast({ title: '请选择这次跟进时间', icon: 'none' })
       return
     }
     this.setData({ submitting: true })

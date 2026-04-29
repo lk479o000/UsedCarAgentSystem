@@ -1,32 +1,41 @@
-<view class="page p-4">
-  <view class="card-glass p-4">
-    <view class="mb-5">
-      <text class="text-sm font-semibold text-gray-800 mb-2 block">关联线索 <text class="text-red-500">*</text></text>
-      <view class="border border-gray-200 rounded-xl px-4 py-3 text-base flex justify-between items-center" bindtap="onSelectLead">
-        <text class="{{leadName ? 'text-gray-800' : 'text-gray-400'}}">{{leadName || '请选择关联线索'}}</text>
+<view class="aura-page with-actionbar">
+  <view class="aura-bg"></view>
+  <view class="aura-content">
+  <view class="card-glass form-card">
+    <view class="form-item">
+      <text class="form-label">关联线索 <text class="form-required">*</text></text>
+      <view class="form-control" bindtap="onSelectLead">
+        <text class="{{leadName ? '' : 'form-placeholder'}}">{{leadName || '请选择关联线索'}}</text>
         <view class="i-lucide-chevron-right text-gray-400" wx:if="{{!isEdit}}"></view>
       </view>
     </view>
 
-    <view class="mb-5">
-      <text class="text-sm font-semibold text-gray-800 mb-2 block">利润金额 <text class="text-red-500">*</text></text>
-      <input class="border border-gray-200 rounded-xl px-4 py-3 text-base" type="digit" placeholder="请输入利润金额" value="{{profit}}" bindinput="onProfitInput" />
+    <view class="form-item">
+      <text class="form-label">利润金额 <text class="form-required">*</text></text>
+      <view class="form-control">
+        <input class="form-input" placeholder-class="form-placeholder" type="digit" placeholder="请输入利润金额" value="{{profit}}" bindinput="onProfitInput" />
+      </view>
     </view>
 
-    <view class="mb-5">
-      <text class="text-sm font-semibold text-gray-800 mb-2 block">经纪人分成 <text class="text-red-500">*</text></text>
-      <input class="border border-gray-200 rounded-xl px-4 py-3 text-base" type="digit" placeholder="请输入经纪人分成" value="{{agentShare}}" bindinput="onAgentShareInput" />
+    <view class="form-item">
+      <text class="form-label">经纪人分成 <text class="form-required">*</text></text>
+      <view class="form-control">
+        <input class="form-input" placeholder-class="form-placeholder" type="digit" placeholder="请输入经纪人分成" value="{{agentShare}}" bindinput="onAgentShareInput" />
+      </view>
     </view>
 
-    <view class="mb-5">
-      <text class="text-sm font-semibold text-gray-800 mb-2 block">备注</text>
-      <textarea class="border border-gray-200 rounded-xl px-4 py-3 text-base" placeholder="请输入备注（最多200字）" maxlength="200" value="{{notes}}" bindinput="onNotesInput" style="min-height: 160rpx;" />
+    <view class="form-item">
+      <text class="form-label">备注</text>
+      <textarea class="form-textarea" placeholder-class="form-placeholder" placeholder="请输入备注（最多200字）" maxlength="200" value="{{notes}}" bindinput="onNotesInput" />
     </view>
   </view>
+  </view>
+</view>
 
-  <view class="h-8"></view>
-
-  <button class="btn-primary w-full py-4 text-base font-semibold" loading="{{submitting}}" bindtap="onSubmit">
-    {{isEdit ? '保存修改' : '确定新增'}}
-  </button>
+<view class="form-actionbar-wrap">
+  <view class="form-actionbar card-glass">
+    <button class="btn-primary form-action-btn" loading="{{submitting}}" bindtap="onSubmit">
+      {{isEdit ? '保存修改' : '确定新增'}}
+    </button>
+  </view>
 </view>

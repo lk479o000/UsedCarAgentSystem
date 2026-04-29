@@ -1,5 +1,7 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "guest-tip": "/components/guest-tip/guest-tip"
+  },
   "enablePullDownRefresh": true,
   "onReachBottomDistance": 50
 }

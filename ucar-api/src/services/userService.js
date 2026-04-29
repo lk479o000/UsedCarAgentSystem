@@ -243,6 +243,12 @@ const getAgentLeads = async (userId, filters, pagination) => {
   if (filters.status !== undefined && filters.status !== '') {
     where.status = filters.status;
   }
+  if (filters.customerName) {
+    where.customerName = { [Op.like]: `%${filters.customerName}%` };
+  }
+  if (filters.customerPhone) {
+    where.customerPhone = { [Op.like]: `%${filters.customerPhone}%` };
+  }
 
   const { count, rows } = await Lead.findAndCountAll({
     where,
@@ -272,9 +278,16 @@ const getAgentSettlements = async (userId, filters, pagination) => {
   const { Settlement, Lead } = require('../models');
 
   const where = { isDeleted: 0 };
+  const leadWhere = { user_id: userId, isDeleted: 0 };
 
   if (filters.status !== undefined && filters.status !== '') {
     where.status = filters.status;
+  }
+  if (filters.customerName) {
+    leadWhere.customerName = { [Op.like]: `%${filters.customerName}%` };
+  }
+  if (filters.customerPhone) {
+    leadWhere.customerPhone = { [Op.like]: `%${filters.customerPhone}%` };
   }
 
   const { count, rows } = await Settlement.findAndCountAll({
@@ -283,7 +296,7 @@ const getAgentSettlements = async (userId, filters, pagination) => {
       {
         model: Lead,
         as: 'lead',
-        where: { user_id: userId, isDeleted: 0 },
+        where: leadWhere,
         required: true,
         attributes: ['id', 'customerName', 'carBrand', 'carModel'],
       },
@@ -341,6 +354,61 @@ const resetPassword = async (id, operatorUserId) => {
   return { code: ERROR_CODES.SUCCESS, message: '密码重置成功，默认密码为123456' };
 };
 
+/**
+ * 获取我的资料（经纪人端）
+ */
+const getMe = async (userId) => {
+  const user = await User.findOne({
+    where: { userid: userId, isDeleted: 0 },
+    attributes: { exclude: ['password', 'passwordSecure'] },
+    raw: true,
+  });
+
+  if (!user) {
+    return { code: ERROR_CODES.NOT_FOUND, message: '用户不存在' };
+  }
+
+  return {
+    code: ERROR_CODES.SUCCESS,
+    data: snakeToCamel(user),
+  };
+};
+
+/**
+ * 更新我的资料（经纪人端）
+ */
+const updateMe = async (userId, updateData) => {
+  const user = await User.findOne({
+    where: { userid: userId, isDeleted: 0 },
+  });
+
+  if (!user) {
+    return { code: ERROR_CODES.NOT_FOUND, message: '用户不存在' };
+  }
+
+  const updateFields = {};
+  if (updateData.username !== undefined) updateFields.username = updateData.username;
+  if (updateData.nickname !== undefined) updateFields.nickname = updateData.nickname;
+  if (updateData.avatarUrl !== undefined) updateFields.headimgurl = updateData.avatarUrl;
+
+  await user.update(updateFields);
+
+  return {
+    code: ERROR_CODES.SUCCESS,
+    data: {
+      userInfo: {
+        id: user.id,
+        nickname: user.nickname,
+        username: user.username,
+        phone: user.phone,
+        role: user.role,
+        status: user.status,
+        avatarUrl: user.headimgurl,
+      },
+    },
+  };
+};
+
 module.exports = {
   createUser,
   getUserList,
@@ -349,4 +417,6 @@ module.exports = {
   getUserOverview,
   getAgentLeads,
   getAgentSettlements,
+  getMe,
+  updateMe,
 };

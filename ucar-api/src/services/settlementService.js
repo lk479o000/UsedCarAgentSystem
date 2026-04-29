@@ -101,6 +101,7 @@ const createSettlement = async (settlementData, operatorUserId) => {
  */
 const getSettlementList = async (filters, pagination) => {
   const where = { isDeleted: 0 };
+  const leadWhere = {};
 
   if (filters.status !== undefined && filters.status !== '') {
     where.status = filters.status;
@@ -113,6 +114,12 @@ const getSettlementList = async (filters, pagination) => {
       [Op.between]: [filters.startDate, filters.endDate],
     };
   }
+  if (filters.customerName) {
+    leadWhere.customerName = { [Op.like]: `%${filters.customerName}%` };
+  }
+  if (filters.customerPhone) {
+    leadWhere.customerPhone = { [Op.like]: `%${filters.customerPhone}%` };
+  }
 
   const { count, rows } = await Settlement.findAndCountAll({
     where,
@@ -121,6 +128,7 @@ const getSettlementList = async (filters, pagination) => {
         model: Lead,
         as: 'lead',
         attributes: ['id', 'customerName', 'customerPhone', 'carBrand', 'carModel'],
+        ...(Object.keys(leadWhere).length ? { where: leadWhere, required: true } : {}),
       },
       {
         model: User,

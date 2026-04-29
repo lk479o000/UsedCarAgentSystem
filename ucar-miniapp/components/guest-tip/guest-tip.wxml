@@ -1,0 +1,13 @@
+<view class="guest-tip card-glass">
+  <view class="guest-bg"></view>
+  <view class="guest-content">
+    <view class="guest-icon">
+        <view class="guest-icon-user"></view>
+      </view>
+    <view class="guest-text">
+      <view class="guest-title">当前为游客模式</view>
+      <view class="guest-sub">{{tipText || '登录后可查看完整功能'}}</view>
+    </view>
+    <button class="guest-btn btn-primary" bindtap="goLogin">去登录</button>
+  </view>
+</view>

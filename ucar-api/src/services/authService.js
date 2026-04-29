@@ -83,8 +83,7 @@ const generateToken = (user) => {
  * 通用登录（支持管理员和经纪人）
  */
 const login = async (username, password, captcha, captchaId, ipAddress) => {
-  // 开发模式下接受固定验证码
-  if (process.env.NODE_ENV !== 'development' && !verifyCaptcha(captchaId, captcha)) {
+  if (process.env.CAPTCHA_ENABLED !== 'false' && !verifyCaptcha(captchaId, captcha)) {
     return { code: ERROR_CODES.PARAM_ERROR, message: '验证码错误或已过期' };
   }
 
@@ -135,8 +134,7 @@ const login = async (username, password, captcha, captchaId, ipAddress) => {
  * 管理员登录
  */
 const adminLogin = async (username, password, captcha, captchaId, ipAddress) => {
-  // 开发模式下接受固定验证码
-  if (process.env.NODE_ENV !== 'development' && !verifyCaptcha(captchaId, captcha)) {
+  if (process.env.CAPTCHA_ENABLED !== 'false' && !verifyCaptcha(captchaId, captcha)) {
     return { code: ERROR_CODES.PARAM_ERROR, message: '验证码错误或已过期' };
   }
 
@@ -267,6 +265,7 @@ const wechatLogin = async (code, ipAddress) => {
           phone: user.phone,
           role: user.role,
           status: user.status,
+          avatarUrl: user.headimgurl,
           wechat_bound: 1,
           need_bind_phone: !user.phone,
         },
@@ -369,6 +368,7 @@ const bindPhone = async (openid, phone, nickname, avatarUrl) => {
         phone: user.phone,
         role: user.role,
         status: user.status,
+        avatarUrl: user.headimgurl,
       },
     },
   };

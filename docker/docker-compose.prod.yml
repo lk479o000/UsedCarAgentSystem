@@ -64,7 +64,7 @@ services:
       - /data/ucar/www:/usr/share/nginx/html:ro
       # 单域名生产配置（/ 静态站点 + /api/ 反代）
       - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
-      # HTTPS 证书（把 fullchain.pem/privkey.pem 放到这里）
+      # HTTPS 证书（把 www.sjmcpitt.com.pem/www.sjmcpitt.com.key 放到这里）
       - /data/ucar/certs:/etc/nginx/certs:ro
       - /data/ucar/logs/nginx:/var/log/nginx
     restart: unless-stopped

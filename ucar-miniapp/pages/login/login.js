@@ -23,6 +23,10 @@ Page({
     }
   },
 
+  goToAccountLogin() {
+    wx.navigateTo({ url: '/pages/account-login/account-login' })
+  },
+
   onPhoneLogin(e) {
     if (e.detail.errMsg.includes('fail') || e.detail.errMsg.includes('cancel')) {
       wx.showToast({ title: '请授权手机号以继续', icon: 'none' })
@@ -132,5 +136,9 @@ Page({
       showModal: false,
       agreed: true 
     })
+  },
+
+  skipLogin() {
+    wx.switchTab({ url: '/pages/index/index' })
   },
 })

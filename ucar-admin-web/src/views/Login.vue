@@ -35,7 +35,7 @@
             size="lg"
             @keyup.enter="handleLogin"
           />
-          <div v-if="!isDev" class="flex gap-3">
+          <div v-if="showCaptcha" class="flex gap-3">
             <UInput
               v-model="form.captcha"
               placeholder="请输入验证码"
@@ -51,7 +51,7 @@
               @click="refreshCaptcha"
             >
           </div>
-          <UButton type="primary" size="lg" block :loading="loading" class="mt-2 h-11 text-base font-semibold shadow-[0_4px_16px_rgba(14,165,233,0.35)] hover:shadow-[0_8px_24px_rgba(14,165,233,0.45)]" @click="handleLogin">
+          <UButton type="primary" size="lg" block :loading="loading" class="mt-2 h-11 text-base font-semibold shadow-[0_4px_16px_rgba(14,165,233,0.35)] hover:shadow-[0_8px_24px_rgba(14,165,233,0.45)]" @click="handleLoginDebounced">
             登录
           </UButton>
         </div>
@@ -66,6 +66,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { Message } from '@/composables/useMessage'
 import { getCaptcha, login } from '@/api/auth'
+import { debounce } from '@/utils/debounce'
 import UInput from '@/components/UInput.vue'
 import UButton from '@/components/UButton.vue'
 
@@ -74,7 +75,11 @@ const userStore = useUserStore()
 const loading = ref(false)
 const captchaImage = ref('')
 const captchaId = ref('')
-const isDev = ref(import.meta.env.DEV)
+const showCaptcha = ref(import.meta.env.VITE_SHOW_CAPTCHA === 'true')
+
+const handleLoginDebounced = debounce(async () => {
+  await handleLogin()
+}, 500)
 
 const form = reactive({
   username: '',
@@ -95,7 +100,7 @@ const refreshCaptcha = async () => {
 }
 
 const handleLogin = async () => {
-  if (isDev.value) {
+  if (!showCaptcha.value) {
     loading.value = true
     try {
       const res = await login({
@@ -116,6 +121,10 @@ const handleLogin = async () => {
   } else {
     if (!form.username || !form.password || !form.captcha) {
       Message.warning('请填写完整信息')
+      return
+    }
+    if (!/^.{4}$/.test(form.captcha)) {
+      Message.warning('验证码必须为4位')
       return
     }
     loading.value = true
@@ -139,7 +148,7 @@ const handleLogin = async () => {
 }
 
 onMounted(() => {
-  if (isDev.value) {
+  if (!showCaptcha.value) {
     form.username = 'admin'
     form.password = '123456'
   }

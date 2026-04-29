@@ -14,6 +14,14 @@
       <!-- 搜索表单 -->
       <div class="flex flex-wrap items-end gap-4 mb-5 p-5 bg-surface rounded-xl shadow-sm border border-border">
         <div class="flex items-end gap-2">
+          <label class="text-sm font-medium text-text-primary whitespace-nowrap mb-2">客户</label>
+          <UInput v-model="searchForm.customerKeyword" placeholder="客户姓名/手机号" class="w-44" />
+        </div>
+        <div v-if="userStore.isAdmin" class="flex items-end gap-2">
+          <label class="text-sm font-medium text-text-primary whitespace-nowrap mb-2">经纪人</label>
+          <UInput v-model="searchForm.agentKeyword" placeholder="经纪人姓名/手机号" class="w-44" />
+        </div>
+        <div class="flex items-end gap-2">
           <label class="text-sm font-medium text-text-primary whitespace-nowrap mb-2">状态</label>
           <USelect v-model="searchForm.status" :options="statusOptions" placeholder="请选择" className="w-24" />
         </div>
@@ -286,7 +294,7 @@ const editFormRef = ref()
 const leadTableData = ref([])
 const leadLoading = ref(false)
 
-const searchForm = reactive({ status: '' })
+const searchForm = reactive({ customerKeyword: '', agentKeyword: '', status: '' })
 const leadSearchForm = reactive({ customerName: '', status: '' })
 const leadPagination = reactive({ page: 1, size: 20, total: 0 })
 const pagination = reactive({ page: 1, size: 20, total: 0 })
@@ -377,11 +385,24 @@ const leadColumns = [
 const loadData = async () => {
   loading.value = true
   try {
+    const customerKeyword = (searchForm.customerKeyword || '').trim()
+    const agentKeyword = (searchForm.agentKeyword || '').trim()
+    const keywordParams = {}
+    if (customerKeyword) {
+      Object.assign(keywordParams, /^\d{3,}$/.test(customerKeyword)
+        ? { customer_phone: customerKeyword }
+        : { customer_name: customerKeyword })
+    }
+    if (userStore.isAdmin && agentKeyword) {
+      Object.assign(keywordParams, /^\d{3,}$/.test(agentKeyword)
+        ? { agent_phone: agentKeyword }
+        : { agent_name: agentKeyword })
+    }
     let res
     if (userStore.isAdmin) {
-      res = await getSettlementList({ ...searchForm, page: pagination.page, size: pagination.size })
+      res = await getSettlementList({ status: searchForm.status, ...keywordParams, page: pagination.page, size: pagination.size })
     } else {
-      res = await getAgentSettlements({ status: searchForm.status, page: pagination.page, size: pagination.size })
+      res = await getAgentSettlements({ status: searchForm.status, ...keywordParams, page: pagination.page, size: pagination.size })
     }
     tableData.value = res.data.list
     pagination.total = res.data.pagination.total
@@ -391,7 +412,12 @@ const loadData = async () => {
 }
 
 const handleSearch = () => { pagination.page = 1; loadData() }
-const resetSearch = () => { searchForm.status = ''; handleSearch() }
+const resetSearch = () => {
+  searchForm.customerKeyword = ''
+  searchForm.agentKeyword = ''
+  searchForm.status = ''
+  handleSearch()
+}
 const handleSizeChange = (size) => { pagination.size = size; loadData() }
 const handlePageChange = (page) => { pagination.page = page; loadData() }
 
@@ -442,7 +468,20 @@ const handleNotify = async (row) => {
 
 const handleExport = async () => {
   try {
-    const blob = await exportSettlements(searchForm)
+    const customerKeyword = (searchForm.customerKeyword || '').trim()
+    const agentKeyword = (searchForm.agentKeyword || '').trim()
+    const keywordParams = {}
+    if (customerKeyword) {
+      Object.assign(keywordParams, /^\d{3,}$/.test(customerKeyword)
+        ? { customer_phone: customerKeyword }
+        : { customer_name: customerKeyword })
+    }
+    if (userStore.isAdmin && agentKeyword) {
+      Object.assign(keywordParams, /^\d{3,}$/.test(agentKeyword)
+        ? { agent_phone: agentKeyword }
+        : { agent_name: agentKeyword })
+    }
+    const blob = await exportSettlements({ status: searchForm.status, ...keywordParams })
     const url = window.URL.createObjectURL(new Blob([blob]))
     const link = document.createElement('a')
     link.href = url
