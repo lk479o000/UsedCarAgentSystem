@@ -152,6 +152,7 @@ Page({
         customerTypeText: item.customerType === 0 ? '买' : item.customerType === 1 ? '卖' : '',
         customerTypeClass: item.customerType === 0 ? 'info' : item.customerType === 1 ? 'warning' : 'primary',
         carText: `${item.carBrand || ''} ${item.carModel || ''}`.trim() || '—',
+        agentName: item.agent?.username || item.agentUsername || '',
         displayPhone: this.data.isAdmin
           ? item.customerPhone
           : item.customerPhone

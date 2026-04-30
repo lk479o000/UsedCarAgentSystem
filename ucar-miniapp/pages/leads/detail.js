@@ -68,6 +68,7 @@ Page({
         : lead.customerPhone
           ? lead.customerPhone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
           : ''
+      lead.agentName = lead.agent?.username || ''
 
       this.setData({ lead })
 

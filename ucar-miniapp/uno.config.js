@@ -50,6 +50,8 @@ module.exports = defineConfig({
     'i-lucide-x-circle',
     'i-lucide-hourglass',
     'i-lucide-chevron-down',
+    'i-lucide-edit',
+    'i-lucide-trash-2',
   ],
   transformers: [transformerClass({ include, classTags: false })],
   separators: '__',

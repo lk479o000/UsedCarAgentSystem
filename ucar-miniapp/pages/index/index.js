@@ -24,6 +24,8 @@ Page({
     recentLeads: [],
   },
 
+  navigateTimer: null,
+
   onLoad() {
     if (!checkLogin()) {
       this.showGuest()
@@ -219,7 +221,20 @@ Page({
       return
     }
     const url = e.currentTarget.dataset.url
-    wx.navigateTo({ url })
+    const tabBarPages = ['/pages/leads/leads', '/pages/settlements/settlements', '/pages/profile/profile']
+    
+    if (this.navigateTimer) {
+      clearTimeout(this.navigateTimer)
+    }
+    
+    this.navigateTimer = setTimeout(() => {
+      if (tabBarPages.includes(url)) {
+        wx.switchTab({ url })
+      } else {
+        wx.navigateTo({ url })
+      }
+      this.navigateTimer = null
+    }, 100)
   },
 
   onLeadTap(e) {

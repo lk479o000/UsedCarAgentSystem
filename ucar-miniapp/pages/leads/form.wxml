@@ -40,7 +40,7 @@
       </view>
     </view>
 
-    <view class="form-item" wx:if="{{!isEdit}}">
+    <view class="form-item">
       <text class="form-label">归属经纪人 <text class="form-required">*</text></text>
       <picker range="{{agentNames}}" value="{{agentIndex}}" bindchange="onAgentChange">
         <view class="form-control">
@@ -48,12 +48,6 @@
           <view class="i-lucide-chevron-down text-gray-400"></view>
         </view>
       </picker>
-    </view>
-    <view class="form-item" wx:if="{{isEdit}}">
-      <text class="form-label">归属经纪人</text>
-      <view class="form-control">
-        <text class="form-placeholder">{{agentName || '-'}}</text>
-      </view>
     </view>
 
     <view class="form-item">

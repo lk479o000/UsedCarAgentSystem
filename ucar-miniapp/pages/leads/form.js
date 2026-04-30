@@ -35,14 +35,19 @@ Page({
       setTimeout(() => wx.navigateBack(), 800)
       return
     }
-    this.loadAgents()
     if (options.id) {
       this.setData({ id: options.id, isEdit: true })
       wx.setNavigationBarTitle({ title: '编辑线索' })
-      this.loadDetail(options.id)
+      this.initEdit(options.id)
     } else {
       wx.setNavigationBarTitle({ title: '新增线索' })
+      this.loadAgents()
     }
+  },
+
+  async initEdit(id) {
+    await this.loadAgents()
+    await this.loadDetail(id)
   },
 
   async loadAgents() {
@@ -60,7 +65,7 @@ Page({
     try {
       const res = await api.getLeadDetail(id)
       const d = res.data
-      const agentIndex = this.data.agents.findIndex((a) => a.id === d.agentId)
+      const agentIndex = this.data.agents.findIndex((a) => a.userid === d.userId)
       this.setData({
         customerName: d.customerName,
         customerPhone: d.customerPhone,
@@ -69,8 +74,8 @@ Page({
         customerTypeIndex: d.customerType,
         carBrand: d.carBrand || '',
         carModel: d.carModel || '',
-        agentId: d.agentId || '',
-        agentName: d.agentName || '',
+        agentId: d.userId || '',
+        agentName: d.agent?.username || '',
         notes: d.notes || '',
         agentIndex: agentIndex >= 0 ? agentIndex : 0,
       })
@@ -99,7 +104,7 @@ Page({
     const agent = this.data.agents[idx]
     this.setData({
       agentIndex: idx,
-      agentId: agent ? agent.id : '',
+      agentId: agent ? agent.userid : '',
       agentName: agent ? agent.username : '',
     })
   },
@@ -114,7 +119,7 @@ Page({
 
     this.setData({ submitting: true })
     try {
-      const data = { customerName, customerPhone, customerType, carBrand, carModel, agentId, notes }
+      const data = { customerName, customerPhone, customerType, carBrand, carModel, userId: agentId, notes }
       if (isEdit) {
         await api.updateLead(id, data)
       } else {
