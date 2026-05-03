@@ -5,6 +5,7 @@ const logger = require('../utils/logger');
 const { snakeToCamel } = require('../utils/formatters');
 const axios = require('axios');
 const dayjs = require('dayjs');
+const regionService = require('./regionService');
 
 // 内存存储推送记录（生产环境应使用Redis）
 const notifyStore = new Map();
@@ -120,6 +121,20 @@ const getSettlementList = async (filters, pagination) => {
   if (filters.customerPhone) {
     leadWhere.customerPhone = { [Op.like]: `%${filters.customerPhone}%` };
   }
+  if (filters.regionKeyword) {
+    const regionIds = await regionService.getRegionIdsByKeyword(filters.regionKeyword);
+    if (regionIds.length > 0) {
+      leadWhere[Op.or] = [
+        { provinceId: { [Op.in]: regionIds } },
+        { cityId: { [Op.in]: regionIds } },
+        { districtId: { [Op.in]: regionIds } },
+      ];
+    } else {
+      leadWhere.id = -1;
+    }
+  }
+
+  const hasLeadWhere = Object.keys(leadWhere).length > 0 || Object.getOwnPropertySymbols(leadWhere).length > 0;
 
   const { count, rows } = await Settlement.findAndCountAll({
     where,
@@ -128,7 +143,7 @@ const getSettlementList = async (filters, pagination) => {
         model: Lead,
         as: 'lead',
         attributes: ['id', 'customerName', 'customerPhone', 'carBrand', 'carModel'],
-        ...(Object.keys(leadWhere).length ? { where: leadWhere, required: true } : {}),
+        ...(hasLeadWhere ? { where: leadWhere, required: true } : {}),
       },
       {
         model: User,

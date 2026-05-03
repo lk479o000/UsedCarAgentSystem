@@ -3,6 +3,7 @@ const { LEAD_STATUS, LEAD_STATUS_FLOW, OPERATION_TYPE, OPERATION_TARGET, ERROR_C
 const { Op } = require('sequelize');
 const logger = require('../utils/logger');
 const { snakeToCamel } = require('../utils/formatters');
+const regionService = require('./regionService');
 
 /**
  * 新增线索
@@ -83,6 +84,18 @@ const getLeadList = async (filters, pagination) => {
       where.createdAt = {
         [Op.between]: [filters.startDate, filters.endDate],
       };
+    }
+    if (filters.regionKeyword) {
+      const regionIds = await regionService.getRegionIdsByKeyword(filters.regionKeyword);
+      if (regionIds.length > 0) {
+        where[Op.or] = [
+          { provinceId: { [Op.in]: regionIds } },
+          { cityId: { [Op.in]: regionIds } },
+          { districtId: { [Op.in]: regionIds } },
+        ];
+      } else {
+        where.id = -1;
+      }
     }
 
     const { count, rows } = await Lead.findAndCountAll({

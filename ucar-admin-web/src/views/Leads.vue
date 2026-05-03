@@ -22,6 +22,10 @@
           <UInput v-model="searchForm.agentKeyword" placeholder="经纪人姓名/手机号" class="w-44" />
         </div>
         <div class="flex items-end gap-2">
+          <label class="text-sm font-medium text-text-primary whitespace-nowrap mb-2">地区</label>
+          <UInput v-model="searchForm.regionKeyword" placeholder="省/市/区关键字" class="w-36" />
+        </div>
+        <div class="flex items-end gap-2">
           <label class="text-sm font-medium text-text-primary whitespace-nowrap mb-2">状态</label>
           <USelect v-model="searchForm.status" :options="searchStatusOptions" placeholder="请选择" className="w-24" />
         </div>
@@ -452,7 +456,7 @@ const leadLoading = ref(false)
 const followupLoading = ref(false)
 const isEditFollowup = ref(false)
 
-const searchForm = reactive({ customerKeyword: '', agentKeyword: '', status: '' })
+const searchForm = reactive({ customerKeyword: '', agentKeyword: '', regionKeyword: '', status: '' })
 const leadSearchForm = reactive({ customerName: '', status: '' })
 const leadPagination = reactive({ page: 1, size: 20, total: 0 })
 const pagination = reactive({ page: 1, size: 20, total: 0 })
@@ -598,6 +602,7 @@ const loadData = async () => {
   try {
     const customerKeyword = (searchForm.customerKeyword || '').trim()
     const agentKeyword = (searchForm.agentKeyword || '').trim()
+    const regionKeyword = (searchForm.regionKeyword || '').trim()
     const keywordParams = {}
     if (customerKeyword) {
       Object.assign(keywordParams, /^\d{3,}$/.test(customerKeyword)
@@ -608,6 +613,9 @@ const loadData = async () => {
       Object.assign(keywordParams, /^\d{3,}$/.test(agentKeyword)
         ? { agent_phone: agentKeyword }
         : { agent_name: agentKeyword })
+    }
+    if (regionKeyword) {
+      keywordParams.region_keyword = regionKeyword
     }
     let res
     if (userStore.isAdmin) {
@@ -626,6 +634,7 @@ const handleSearch = () => { pagination.page = 1; loadData() }
 const resetSearch = () => {
   searchForm.customerKeyword = ''
   searchForm.agentKeyword = ''
+  searchForm.regionKeyword = ''
   searchForm.status = ''
   handleSearch()
 }

@@ -531,6 +531,21 @@ const regionService = {
     return { code: 0, data: snakeToCamel(parent) };
   },
 
+  async getRegionIdsByKeyword(keyword) {
+    if (!keyword || !keyword.trim()) return [];
+    const trimmed = keyword.trim();
+    const result = await sequelize.query(
+      `SELECT DISTINCT cl.region_id FROM c_region_cl cl
+       INNER JOIN c_region r ON r.id = cl.region_id AND r.is_deleted = 0
+       WHERE cl.full_path LIKE ?`,
+      {
+        replacements: [`%${trimmed}%`],
+        type: QueryTypes.SELECT,
+      }
+    );
+    return result.map((r) => r.region_id);
+  },
+
   async getRegionAllAncestors(regionId) {
     const ancestors = await RegionClosure.findAll({
       where: {

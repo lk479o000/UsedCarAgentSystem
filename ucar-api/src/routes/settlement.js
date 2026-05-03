@@ -36,6 +36,7 @@ router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
       endDate: req.query.end_date,
       customerName: req.query.customer_name,
       customerPhone: req.query.customer_phone,
+      regionKeyword: req.query.region_keyword,
     };
     const pagination = {
       page: parseInt(req.query.page) || 1,
@@ -110,6 +111,7 @@ router.get('/export', authMiddleware, adminMiddleware, async (req, res) => {
       agentId: req.query.agent_id,
       startDate: req.query.start_date,
       endDate: req.query.end_date,
+      regionKeyword: req.query.region_keyword,
     };
     
     const result = await settlementService.getSettlementList(filters, { page: 1, size: 1000 });

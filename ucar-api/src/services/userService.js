@@ -5,6 +5,7 @@ const { User, OperationLog } = require('../models');
 const { USER_ROLE, USER_STATUS, OPERATION_TYPE, OPERATION_TARGET, ERROR_CODES } = require('../utils/constants');
 const { Op } = require('sequelize');
 const { snakeToCamel } = require('../utils/formatters');
+const regionService = require('./regionService');
 
 // 读取RSA公钥
 const publicKey = fs.readFileSync(path.join(__dirname, '../../public.pem'), 'utf8');
@@ -249,6 +250,18 @@ const getAgentLeads = async (userId, filters, pagination) => {
   if (filters.customerPhone) {
     where.customerPhone = { [Op.like]: `%${filters.customerPhone}%` };
   }
+  if (filters.regionKeyword) {
+    const regionIds = await regionService.getRegionIdsByKeyword(filters.regionKeyword);
+    if (regionIds.length > 0) {
+      where[Op.or] = [
+        { provinceId: { [Op.in]: regionIds } },
+        { cityId: { [Op.in]: regionIds } },
+        { districtId: { [Op.in]: regionIds } },
+      ];
+    } else {
+      where.id = -1;
+    }
+  }
 
   const { count, rows } = await Lead.findAndCountAll({
     where,
@@ -288,6 +301,18 @@ const getAgentSettlements = async (userId, filters, pagination) => {
   }
   if (filters.customerPhone) {
     leadWhere.customerPhone = { [Op.like]: `%${filters.customerPhone}%` };
+  }
+  if (filters.regionKeyword) {
+    const regionIds = await regionService.getRegionIdsByKeyword(filters.regionKeyword);
+    if (regionIds.length > 0) {
+      leadWhere[Op.or] = [
+        { provinceId: { [Op.in]: regionIds } },
+        { cityId: { [Op.in]: regionIds } },
+        { districtId: { [Op.in]: regionIds } },
+      ];
+    } else {
+      leadWhere.id = -1;
+    }
   }
 
   const { count, rows } = await Settlement.findAndCountAll({

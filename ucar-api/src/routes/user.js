@@ -201,6 +201,7 @@ router.get('/lead', authMiddleware, async (req, res) => {
       status: req.query.status,
       customerName: req.query.customer_name,
       customerPhone: req.query.customer_phone,
+      regionKeyword: req.query.region_keyword,
     };
     const pagination = {
       page: parseInt(req.query.page) || 1,
@@ -226,6 +227,7 @@ router.get('/settlement', authMiddleware, async (req, res) => {
       status: req.query.status,
       customerName: req.query.customer_name,
       customerPhone: req.query.customer_phone,
+      regionKeyword: req.query.region_keyword,
     };
     const pagination = {
       page: parseInt(req.query.page) || 1,
