@@ -4,7 +4,7 @@
       <template #header>
         <div class="flex flex-col pt-6 px-6 pb-0">
           <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-2xl text-white mb-5 shadow-[0_8px_24px_rgba(14,165,233,0.35)]">
-            <span class="i-lucide-lock-keyhole" />
+            <span class="i-lucide-lock" />
           </div>
           <h2 class="text-xl font-bold text-text-primary tracking-tight">修改密码</h2>
           <p class="text-sm text-text-secondary mt-1">请定期更换密码以保障账户安全</p>

@@ -25,6 +25,8 @@ app.use('/api/v1/auth', require('./routes/auth'));
 app.use('/api/v1/lead', require('./routes/lead'));
 app.use('/api/v1/settlement', require('./routes/settlement'));
 app.use('/api/v1/user', require('./routes/user'));
+app.use('/api/v1/region', require('./routes/region'));
+app.use('/api/v1/dashboard', require('./routes/dashboard'));
 
 // 健康检查
 app.get('/health', (req, res) => {

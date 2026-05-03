@@ -2,10 +2,10 @@ let seed = 0
 const instances = new Map()
 
 const bgMap = {
-  success: 'bg-success/10 border-success/20 text-teal-700',
-  error: 'bg-danger/10 border-danger/20 text-red-700',
-  warning: 'bg-warning/10 border-warning/20 text-amber-700',
-  info: 'bg-primary/10 border-primary/20 text-primary-dark',
+  success: 'bg-teal-50 border-teal-200 text-teal-800',
+  error: 'bg-red-50 border-red-200 text-red-800',
+  warning: 'bg-amber-50 border-amber-200 text-amber-800',
+  info: 'bg-sky-50 border-sky-200 text-sky-800',
 }
 
 const iconMap = {
@@ -28,6 +28,15 @@ function createMessage(type) {
     console.log(`Message.${type} called with:`, message)
     const id = `message-${++seed}`
     
+    // 颜色映射
+    const colorConfig = {
+      success: { bg: '#f0fdfa', border: '#99f6e4', text: '#115e59' },
+      error: { bg: '#fef2f2', border: '#fecaca', text: '#991b1b' },
+      warning: { bg: '#fffbeb', border: '#fde68a', text: '#92400e' },
+      info: { bg: '#f0f9ff', border: '#bae6fd', text: '#0c4a6e' },
+    }
+    const config = colorConfig[type]
+    
     // 使用原生DOM操作创建消息框
     const messageElement = document.createElement('div')
     messageElement.id = id
@@ -35,6 +44,9 @@ function createMessage(type) {
     messageElement.style.display = 'block'
     messageElement.style.visibility = 'visible'
     messageElement.style.opacity = '1'
+    messageElement.style.backgroundColor = config.bg
+    messageElement.style.borderColor = config.border
+    messageElement.style.color = config.text
     // 计算左边菜单的宽度，默认为240px
     const menuWidth = 240
     

@@ -56,7 +56,7 @@ const props = defineProps({
   className: { type: String, default: 'w-full' },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'change'])
 
 const open = ref(false)
 const selectRef = ref(null)
@@ -72,6 +72,7 @@ const toggleOpen = () => {
 
 const selectOption = (opt) => {
   emit('update:modelValue', opt.value)
+  emit('change', opt.value)
   open.value = false
 }
 

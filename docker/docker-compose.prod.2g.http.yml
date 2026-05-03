@@ -47,6 +47,7 @@ services:
       NODE_OPTIONS: --max-old-space-size=256
     volumes:
       - /data/ucar/logs/api:/app/logs
+      - /root/ucar/ucar-api/src:/app/src
     depends_on:
       - mysql
     expose:

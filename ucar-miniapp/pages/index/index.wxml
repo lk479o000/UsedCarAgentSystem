@@ -34,19 +34,19 @@
   <view class="card-glass quick-actions">
     <view class="section-title">快捷入口</view>
     <view class="action-grid">
-      <view class="action-item" bindtap="navigateTo" data-url="/pages/leads/leads">
+      <view class="action-item" hover-class="action-item--active" hover-stay-time="150" bindtap="navigateTo" data-url="/pages/leads/leads">
         <view class="action-icon blue i-lucide-list"></view>
         <text class="action-label">我的线索</text>
       </view>
-      <view class="action-item" bindtap="navigateTo" data-url="/pages/settlements/settlements">
+      <view class="action-item" hover-class="action-item--active" hover-stay-time="150" bindtap="navigateTo" data-url="/pages/settlements/settlements">
         <view class="action-icon green i-lucide-wallet"></view>
         <text class="action-label">我的结算</text>
       </view>
-      <view class="action-item" bindtap="navigateTo" data-url="/pages/profile/profile">
+      <view class="action-item" hover-class="action-item--active" hover-stay-time="150" bindtap="navigateTo" data-url="/pages/profile/profile">
         <view class="action-icon orange i-lucide-user"></view>
         <text class="action-label">个人中心</text>
       </view>
-      <view class="action-item" bindtap="refreshData">
+      <view class="action-item" hover-class="action-item--active" hover-stay-time="150" bindtap="refreshData">
         <view class="action-icon red i-lucide-refresh-cw"></view>
         <text class="action-label">刷新数据</text>
       </view>

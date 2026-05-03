@@ -6,10 +6,10 @@ Page({
     leadId: '',
     id: '',
     isEdit: false,
-    content: '',
-    result: '',
-    followUpTime: '',
-    nextFollowUpTime: '',
+    followupContent: '',
+    followupResult: '',
+    followupTime: '',
+    nextFollowupTime: '',
     submitting: false,
   },
 
@@ -33,7 +33,7 @@ Page({
       wx.setNavigationBarTitle({ title: '新增跟进记录' })
       const now = new Date()
       const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
-      this.setData({ followUpTime: timeStr })
+      this.setData({ followupTime: timeStr })
     }
   },
 
@@ -43,10 +43,10 @@ Page({
       const followup = (res.data || []).find((f) => f.id == id)
       if (followup) {
         this.setData({
-          content: followup.content,
-          result: followup.result || '',
-          followUpTime: followup.followUpTime || '',
-          nextFollowUpTime: followup.nextFollowUpTime || '',
+          followupContent: followup.followupContent,
+          followupResult: followup.followupResult || '',
+          followupTime: followup.followupTime || '',
+          nextFollowupTime: followup.nextFollowupTime || '',
         })
       }
     } catch (err) {
@@ -54,27 +54,27 @@ Page({
     }
   },
 
-  onContentInput(e) { this.setData({ content: e.detail.value }) },
-  onResultInput(e) { this.setData({ result: e.detail.value }) },
-  onFollowUpTimeChange(e) { this.setData({ followUpTime: e.detail.value }) },
-  onNextFollowUpTimeChange(e) { this.setData({ nextFollowUpTime: e.detail.value }) },
+  onContentInput(e) { this.setData({ followupContent: e.detail.value }) },
+  onResultInput(e) { this.setData({ followupResult: e.detail.value }) },
+  onFollowUpTimeChange(e) { this.setData({ followupTime: e.detail.value }) },
+  onNextFollowUpTimeChange(e) { this.setData({ nextFollowupTime: e.detail.value }) },
 
   async onSubmit() {
-    if (!this.data.content) {
+    if (!this.data.followupContent) {
       wx.showToast({ title: '请输入跟进内容', icon: 'none' })
       return
     }
-    if (!this.data.followUpTime) {
+    if (!this.data.followupTime) {
       wx.showToast({ title: '请选择这次跟进时间', icon: 'none' })
       return
     }
     this.setData({ submitting: true })
     try {
       const data = {
-        content: this.data.content,
-        result: this.data.result,
-        followUpTime: this.data.followUpTime,
-        nextFollowUpTime: this.data.nextFollowUpTime,
+        followupContent: this.data.followupContent,
+        followupResult: this.data.followupResult,
+        followupTime: this.data.followupTime,
+        nextFollowupTime: this.data.nextFollowupTime,
       }
       if (this.data.isEdit) {
         await api.updateFollowup(this.data.id, data)

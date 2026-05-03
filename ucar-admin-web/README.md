@@ -54,8 +54,21 @@ const request = axios.create({
 ### 开发模式
 
 ```bash
+# 模式1：无验证码模式（快速开发，推荐）
 npm run dev
+
+# 模式2：有验证码模式（测试验证码UI）
+npm run local
 ```
+
+**两种模式的区别：**
+
+| 命令 | 加载的环境文件 | 验证码显示 | 后端验证码验证 | 适用场景 |
+|------|--------------|-----------|--------------|---------|
+| `npm run dev` | `.env.dev` | 不显示 | 后端不验证（需配置`CAPTCHA_ENABLED=false`） | 快速开发，无需输入验证码 |
+| `npm run local` | `.env.development` | 显示 | 后端不验证（需配置`CAPTCHA_ENABLED=false`） | 测试验证码UI交互 |
+
+**注意**：两种模式都需要后端 `.env` 中设置 `CAPTCHA_ENABLED=false`，否则会因为 `nodemon` 热重载清空内存中的验证码存储而报"验证码错误或已过期"。
 
 ### 构建生产版本
 

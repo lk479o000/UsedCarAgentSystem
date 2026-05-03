@@ -41,6 +41,36 @@
     </view>
 
     <view class="form-item">
+      <text class="form-label">所属省份</text>
+      <picker range="{{provinceNames}}" value="{{provinceIndex}}" bindchange="onProvinceChange">
+        <view class="form-control">
+          <text>{{provinceNames[provinceIndex] || '请选择省份'}}</text>
+          <view class="i-lucide-chevron-down text-gray-400"></view>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item" wx:if="{{cityNames.length > 0}}">
+      <text class="form-label">所属城市</text>
+      <picker range="{{cityNames}}" value="{{cityIndex}}" bindchange="onCityChange">
+        <view class="form-control">
+          <text>{{cityNames[cityIndex] || '请选择城市'}}</text>
+          <view class="i-lucide-chevron-down text-gray-400"></view>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item" wx:if="{{districtNames.length > 0}}">
+      <text class="form-label">所属区县</text>
+      <picker range="{{districtNames}}" value="{{districtIndex}}" bindchange="onDistrictChange">
+        <view class="form-control">
+          <text>{{districtNames[districtIndex] || '请选择区县'}}</text>
+          <view class="i-lucide-chevron-down text-gray-400"></view>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
       <text class="form-label">归属经纪人 <text class="form-required">*</text></text>
       <picker range="{{agentNames}}" value="{{agentIndex}}" bindchange="onAgentChange">
         <view class="form-control">

@@ -84,6 +84,15 @@
         <UFormItem label="车辆型号" prop="carModel">
           <UInput v-model="form.carModel" />
         </UFormItem>
+        <UFormItem label="所属省份">
+          <USelect v-model="form.provinceId" :options="provinceOptions" placeholder="请选择省份" className="w-full" @change="handleProvinceChange" />
+        </UFormItem>
+        <UFormItem label="所属城市">
+          <USelect v-model="form.cityId" :options="cityOptions" placeholder="请选择城市" className="w-full" @change="handleCityChange" />
+        </UFormItem>
+        <UFormItem label="所属区县">
+          <USelect v-model="form.districtId" :options="districtOptions" placeholder="请选择区县" className="w-full" />
+        </UFormItem>
         <UFormItem label="归属经纪人" prop="userId">
           <USelect v-model="form.userId" :options="agentOptions" placeholder="请选择经纪人" className="w-full" />
         </UFormItem>
@@ -318,6 +327,10 @@
           <span class="text-sm text-text-primary">{{ detailForm.carModel }}</span>
         </div>
         <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-secondary w-20">所属区域</span>
+          <span class="text-sm text-text-primary">{{ detailForm.regionText || '-' }}</span>
+        </div>
+        <div class="flex items-center gap-4">
           <span class="text-sm font-medium text-text-secondary w-20">状态</span>
           <UTag :type="getStatusType(detailForm.status)">{{ getStatusText(detailForm.status) }}</UTag>
         </div>
@@ -360,6 +373,15 @@
         <UFormItem label="车辆型号" prop="carModel">
           <UInput v-model="editForm.carModel" placeholder="请输入车辆型号" />
         </UFormItem>
+        <UFormItem label="所属省份">
+          <USelect v-model="editForm.provinceId" :options="editProvinceOptions" placeholder="请选择省份" className="w-full" @change="handleEditProvinceChange" />
+        </UFormItem>
+        <UFormItem label="所属城市">
+          <USelect v-model="editForm.cityId" :options="editCityOptions" placeholder="请选择城市" className="w-full" @change="handleEditCityChange" />
+        </UFormItem>
+        <UFormItem label="所属区县">
+          <USelect v-model="editForm.districtId" :options="editDistrictOptions" placeholder="请选择区县" className="w-full" />
+        </UFormItem>
         <UFormItem label="归属经纪人" prop="userId">
           <USelect v-model="editForm.userId" :options="agentOptions" placeholder="请选择经纪人" className="w-full" />
         </UFormItem>
@@ -387,6 +409,7 @@ import { Message } from '@/composables/useMessage'
 import { getLeadList, createLead, updateLead, deleteLead, exportLeads, createFollowup, getFollowupList, updateFollowup, deleteFollowup } from '@/api/lead'
 import { createSettlement, updateSettlement, getSettlementByLeadId } from '@/api/settlement'
 import { getUserList, getAgentLeads } from '@/api/user'
+import { getProvinces, getCities, getDistricts } from '@/api/region'
 import { useUserStore } from '@/store/user'
 import UCard from '@/components/UCard.vue'
 import UButton from '@/components/UButton.vue'
@@ -435,8 +458,22 @@ const leadPagination = reactive({ page: 1, size: 20, total: 0 })
 const pagination = reactive({ page: 1, size: 20, total: 0 })
 
 const form = reactive({
-  customerName: '', customerPhone: '', customerType: 0, carBrand: '', carModel: '', userId: '', notes: '',
+  customerName: '', customerPhone: '', customerType: 0, carBrand: '', carModel: '', provinceId: '', cityId: '', districtId: '', userId: '', notes: '',
 })
+
+const provinceList = ref([])
+const cityList = ref([])
+const districtList = ref([])
+const editProvinceList = ref([])
+const editCityList = ref([])
+const editDistrictList = ref([])
+
+const provinceOptions = computed(() => provinceList.value.map((p) => ({ label: p.regionName, value: p.id })))
+const cityOptions = computed(() => cityList.value.map((c) => ({ label: c.regionName, value: c.id })))
+const districtOptions = computed(() => districtList.value.map((d) => ({ label: d.regionName, value: d.id })))
+const editProvinceOptions = computed(() => editProvinceList.value.map((p) => ({ label: p.regionName, value: p.id })))
+const editCityOptions = computed(() => editCityList.value.map((c) => ({ label: c.regionName, value: c.id })))
+const editDistrictOptions = computed(() => editDistrictList.value.map((d) => ({ label: d.regionName, value: d.id })))
 
 const statusForm = reactive({ status: '', carActualPrice: 0, failReason: '' })
 
@@ -449,9 +486,9 @@ const followupFormRules = {
   followupTime: [{ required: true, message: '请选择这次跟进时间' }],
 }
 
-const detailForm = reactive({ customerName: '', customerPhone: '', customerType: 0, carBrand: '', carModel: '', status: 0, agent: null, notes: '', createdAt: '' })
+const detailForm = reactive({ customerName: '', customerPhone: '', customerType: 0, carBrand: '', carModel: '', provinceId: '', cityId: '', districtId: '', regionText: '', status: 0, agent: null, notes: '', createdAt: '' })
 
-const editForm = reactive({ id: '', customerName: '', customerPhone: '', customerType: 0, carBrand: '', carModel: '', userId: '', notes: '' })
+const editForm = reactive({ id: '', customerName: '', customerPhone: '', customerType: 0, carBrand: '', carModel: '', provinceId: '', cityId: '', districtId: '', userId: '', notes: '' })
 
 const formRules = {
   customerName: [{ required: true, message: '请输入客户姓名' }],
@@ -534,6 +571,7 @@ const columns = computed(() => {
     { key: 'customerType', title: '客户类型' },
     { key: 'carBrand', title: '车辆品牌' },
     { key: 'carModel', title: '车辆型号' },
+    { key: 'regionText', title: '所属区域' },
     { key: 'status', title: '状态' },
     { key: 'createdAt', title: '创建时间' },
   ]
@@ -577,7 +615,7 @@ const loadData = async () => {
     } else {
       res = await getAgentLeads({ status: searchForm.status, ...keywordParams, page: pagination.page, size: pagination.size })
     }
-    tableData.value = res.data.list
+    tableData.value = await enrichRegionText(res.data.list)
     pagination.total = res.data.pagination.total
   } finally {
     loading.value = false
@@ -594,9 +632,74 @@ const resetSearch = () => {
 const handleSizeChange = (size) => { pagination.size = size; loadData() }
 const handlePageChange = (page) => { pagination.page = page; loadData() }
 
-const showAddDialog = () => {
-  Object.assign(form, { customerName: '', customerPhone: '', carBrand: '', carModel: '', userId: '', notes: '' })
+const showAddDialog = async () => {
+  Object.assign(form, { customerName: '', customerPhone: '', carBrand: '', carModel: '', provinceId: '', cityId: '', districtId: '', userId: '', notes: '' })
+  cityList.value = []
+  districtList.value = []
+  await loadProvinces()
   dialogVisible.value = true
+}
+
+const loadProvinces = async () => {
+  try {
+    const res = await getProvinces()
+    provinceList.value = res.data || []
+    editProvinceList.value = res.data || []
+  } catch (err) {
+    console.error('加载省份失败:', err)
+  }
+}
+
+const loadCities = async (provinceId, isEdit = false) => {
+  if (!provinceId) {
+    if (isEdit) { editCityList.value = []; editDistrictList.value = [] }
+    else { cityList.value = []; districtList.value = [] }
+    return
+  }
+  try {
+    const res = await getCities(provinceId)
+    if (isEdit) { editCityList.value = res.data || []; editDistrictList.value = [] }
+    else { cityList.value = res.data || []; districtList.value = [] }
+  } catch (err) {
+    console.error('加载城市失败:', err)
+  }
+}
+
+const loadDistricts = async (cityId, isEdit = false) => {
+  if (!cityId) {
+    if (isEdit) editDistrictList.value = []
+    else districtList.value = []
+    return
+  }
+  try {
+    const res = await getDistricts(cityId)
+    if (isEdit) editDistrictList.value = res.data || []
+    else districtList.value = res.data || []
+  } catch (err) {
+    console.error('加载区县失败:', err)
+  }
+}
+
+const handleProvinceChange = async () => {
+  form.cityId = ''
+  form.districtId = ''
+  await loadCities(form.provinceId, false)
+}
+
+const handleCityChange = async () => {
+  form.districtId = ''
+  await loadDistricts(form.cityId, false)
+}
+
+const handleEditProvinceChange = async () => {
+  editForm.cityId = ''
+  editForm.districtId = ''
+  await loadCities(editForm.provinceId, true)
+}
+
+const handleEditCityChange = async () => {
+  editForm.districtId = ''
+  await loadDistricts(editForm.cityId, true)
 }
 
 const handleSubmit = async () => {
@@ -726,13 +829,79 @@ const handleLeadPageChange = (page) => { leadPagination.page = page; loadLeads()
 const handleLeadSelect = (row) => { settlementForm.leadId = row.id; leadDialogVisible.value = false }
 const openLeadSelectDialog = () => { leadPagination.page = 1; loadLeads(); leadDialogVisible.value = true }
 
-const handleRowClick = (row) => {
+const handleRowClick = async (row) => {
   Object.assign(detailForm, row)
+  detailForm.regionText = await buildRegionText(row.provinceId, row.cityId, row.districtId)
   detailDialogVisible.value = true
 }
 
-const showEditDialog = (row) => {
+const buildRegionText = async (provinceId, cityId, districtId) => {
+  const parts = []
+  try {
+    if (provinceId) {
+      const allProvinces = provinceList.value.length > 0 ? provinceList.value : (await getProvinces()).data || []
+      const province = allProvinces.find((p) => p.id === provinceId)
+      if (province) parts.push(province.regionName)
+    }
+    if (cityId) {
+      const res = await getCities(provinceId)
+      const city = (res.data || []).find((c) => c.id === cityId)
+      if (city) parts.push(city.regionName)
+    }
+    if (districtId) {
+      const res = await getDistricts(cityId)
+      const district = (res.data || []).find((d) => d.id === districtId)
+      if (district) parts.push(district.regionName)
+    }
+  } catch (err) {
+    console.error('构建区域文本失败:', err)
+  }
+  return parts.join(' / ') || '-'
+}
+
+const enrichRegionText = async (list) => {
+  if (!list || list.length === 0) return list
+  let allProvinces = provinceList.value
+  if (allProvinces.length === 0) {
+    try {
+      const res = await getProvinces()
+      allProvinces = res.data || []
+      provinceList.value = allProvinces
+    } catch (err) {
+      return list.map((item) => ({ ...item, regionText: '-' }))
+    }
+  }
+  const cityCache = {}
+  const districtCache = {}
+  return list.map((item) => {
+    const parts = []
+    if (item.provinceId) {
+      const province = allProvinces.find((p) => p.id === item.provinceId)
+      if (province) parts.push(province.regionName)
+    }
+    if (item.cityId && cityCache[item.provinceId]) {
+      const city = cityCache[item.provinceId].find((c) => c.id === item.cityId)
+      if (city) parts.push(city.regionName)
+    }
+    if (item.districtId && districtCache[item.cityId]) {
+      const district = districtCache[item.cityId].find((d) => d.id === item.districtId)
+      if (district) parts.push(district.regionName)
+    }
+    return { ...item, regionText: parts.length > 0 ? parts.join(' / ') : '-' }
+  })
+}
+
+const showEditDialog = async (row) => {
   Object.assign(editForm, row)
+  editCityList.value = []
+  editDistrictList.value = []
+  await loadProvinces()
+  if (editForm.provinceId) {
+    await loadCities(editForm.provinceId, true)
+  }
+  if (editForm.cityId) {
+    await loadDistricts(editForm.cityId, true)
+  }
   editDialogVisible.value = true
 }
 
@@ -747,6 +916,9 @@ const handleEditSubmit = async () => {
       customerType: editForm.customerType,
       carBrand: editForm.carBrand,
       carModel: editForm.carModel,
+      provinceId: editForm.provinceId || null,
+      cityId: editForm.cityId || null,
+      districtId: editForm.districtId || null,
       userId: editForm.userId,
       notes: editForm.notes
     }

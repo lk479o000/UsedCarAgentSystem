@@ -112,8 +112,8 @@ page {
 }
 
 .stat-icon .i-lucide-list,
-.stat-icon .i-lucide-check-circle,
-.stat-icon .i-lucide-x-circle,
+.stat-icon .i-lucide-handshake,
+.stat-icon .i-lucide-ban,
 .stat-icon .i-lucide-wallet {
   font-size: 32rpx;
 }
@@ -187,17 +187,17 @@ page {
   transition: all 0.3s ease;
 }
 
-.action-item:active {
+.action-item--active {
   background: rgba(14, 165, 233, 0.15);
   transform: scale(0.92);
 }
 
-.action-item:active .action-icon {
+.action-item--active .action-icon {
   opacity: 0.8;
   transform: scale(0.95);
 }
 
-.action-item:active .action-label {
+.action-item--active .action-label {
   color: #0EA5E9;
 }
 

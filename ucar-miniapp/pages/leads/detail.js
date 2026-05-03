@@ -70,6 +70,8 @@ Page({
           : ''
       lead.agentName = lead.agent?.username || ''
 
+      lead.regionText = await this.buildRegionText(lead.provinceId, lead.cityId, lead.districtId)
+
       this.setData({ lead })
 
       if (this.data.isAdmin) {
@@ -238,4 +240,28 @@ Page({
   },
 
   noop() {},
+
+  async buildRegionText(provinceId, cityId, districtId) {
+    const parts = []
+    try {
+      if (provinceId) {
+        const res = await api.getProvinces()
+        const province = (res.data || []).find((p) => p.id === provinceId)
+        if (province) parts.push(province.regionName)
+      }
+      if (cityId) {
+        const res = await api.getCities(provinceId)
+        const city = (res.data || []).find((c) => c.id === cityId)
+        if (city) parts.push(city.regionName)
+      }
+      if (districtId) {
+        const res = await api.getDistricts(cityId)
+        const district = (res.data || []).find((d) => d.id === districtId)
+        if (district) parts.push(district.regionName)
+      }
+    } catch (err) {
+      console.error('构建区域文本失败:', err)
+    }
+    return parts.join(' / ')
+  },
 })

@@ -68,9 +68,13 @@ const userStore = useUserStore()
 
 const menuItems = [
   { path: '/dashboard', title: '首页', icon: 'i-lucide-home text-lg' },
+  { path: '/analytics', title: '数据大屏', icon: 'i-lucide-bar-chart-3 text-lg' },
   { path: '/leads', title: '线索管理', icon: 'i-lucide-file-text text-lg' },
   { path: '/settlements', title: '结算管理', icon: 'i-lucide-coins text-lg' },
-  ...(userStore.isAdmin ? [{ path: '/users', title: '经纪人管理', icon: 'i-lucide-user text-lg' }] : []),
+  ...(userStore.isAdmin ? [
+    { path: '/users', title: '经纪人管理', icon: 'i-lucide-user text-lg' },
+    { path: '/regions', title: '区域管理', icon: 'i-lucide-map-pin text-lg' },
+  ] : []),
 ]
 
 const dropdownItems = [

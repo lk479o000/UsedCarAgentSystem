@@ -4,19 +4,19 @@
     <view class="card-glass form-card">
       <view class="form-item">
         <text class="form-label">跟进内容 <text class="form-required">*</text></text>
-        <textarea class="form-textarea" placeholder-class="form-placeholder" placeholder="请输入跟进内容" maxlength="500" value="{{content}}" bindinput="onContentInput" />
+        <textarea class="form-textarea" placeholder-class="form-placeholder" placeholder="请输入跟进内容" maxlength="500" value="{{followupContent}}" bindinput="onContentInput" />
       </view>
 
       <view class="form-item">
         <text class="form-label">跟进结果</text>
-        <textarea class="form-textarea" placeholder-class="form-placeholder" placeholder="请输入跟进结果（可选）" maxlength="200" value="{{result}}" bindinput="onResultInput" />
+        <textarea class="form-textarea" placeholder-class="form-placeholder" placeholder="请输入跟进结果（可选）" maxlength="200" value="{{followupResult}}" bindinput="onResultInput" />
       </view>
 
       <view class="form-item">
         <text class="form-label">这次跟进时间 <text class="form-required">*</text></text>
-        <picker mode="date" value="{{followUpTime}}" bindchange="onFollowUpTimeChange">
+        <picker mode="date" value="{{followupTime}}" bindchange="onFollowUpTimeChange">
           <view class="form-control">
-            <text class="{{followUpTime ? '' : 'form-placeholder'}}">{{followUpTime || '请选择日期'}}</text>
+            <text class="{{followupTime ? '' : 'form-placeholder'}}">{{followupTime || '请选择日期'}}</text>
             <view class="i-lucide-calendar"></view>
           </view>
         </picker>
@@ -24,9 +24,9 @@
 
       <view class="form-item">
         <text class="form-label">下次跟进时间（可选）</text>
-        <picker mode="date" value="{{nextFollowUpTime}}" bindchange="onNextFollowUpTimeChange">
+        <picker mode="date" value="{{nextFollowupTime}}" bindchange="onNextFollowUpTimeChange">
           <view class="form-control">
-            <text class="{{nextFollowUpTime ? '' : 'form-placeholder'}}">{{nextFollowUpTime || '请选择日期'}}</text>
+            <text class="{{nextFollowupTime ? '' : 'form-placeholder'}}">{{nextFollowupTime || '请选择日期'}}</text>
             <view class="i-lucide-calendar"></view>
           </view>
         </picker>

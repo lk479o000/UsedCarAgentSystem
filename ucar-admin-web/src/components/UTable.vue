@@ -75,12 +75,10 @@ const sortKey = ref('')
 const sortOrder = ref('')
 
 const getValue = (row, key) => {
-  // 首先尝试直接使用完整的 key 作为属性名
   if (row.hasOwnProperty(key)) {
     return row[key] ?? '-'
   }
   
-  // 如果直接使用完整 key 找不到，再尝试按 '.' 分割逐层获取
   const keys = key.split('.')
   let value = row
   for (const k of keys) {

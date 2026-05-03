@@ -233,8 +233,6 @@ const wechatLogin = async (code, ipAddress) => {
         role: USER_ROLE.AGENT,
         status: USER_STATUS.ENABLED,
         isDeleted: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
       
       // 记录登录日志
@@ -341,8 +339,6 @@ const bindPhone = async (openid, phone, nickname, avatarUrl) => {
       role: USER_ROLE.AGENT,
       status: USER_STATUS.ENABLED,
       isDeleted: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     });
   }
 

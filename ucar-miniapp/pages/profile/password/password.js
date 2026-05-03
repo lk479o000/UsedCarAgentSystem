@@ -7,6 +7,9 @@ Page({
     newPassword: '',
     confirmPassword: '',
     loading: false,
+    oldPasswordVisible: false,
+    newPasswordVisible: false,
+    confirmPasswordVisible: false,
   },
 
   onShow() {
@@ -20,6 +23,16 @@ Page({
   onOldPasswordInput(e) { this.setData({ oldPassword: e.detail.value }) },
   onNewPasswordInput(e) { this.setData({ newPassword: e.detail.value }) },
   onConfirmPasswordInput(e) { this.setData({ confirmPassword: e.detail.value }) },
+
+  toggleOldPasswordVisible() {
+    this.setData({ oldPasswordVisible: !this.data.oldPasswordVisible })
+  },
+  toggleNewPasswordVisible() {
+    this.setData({ newPasswordVisible: !this.data.newPasswordVisible })
+  },
+  toggleConfirmPasswordVisible() {
+    this.setData({ confirmPasswordVisible: !this.data.confirmPasswordVisible })
+  },
 
   async onSubmit() {
     if (!checkLogin()) {
@@ -49,4 +62,3 @@ Page({
     }
   },
 })
-

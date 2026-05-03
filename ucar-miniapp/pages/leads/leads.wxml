@@ -84,6 +84,10 @@
           <view class="i-lucide-user text-primary"></view>
           <text>经纪人 {{item.agentName}}</text>
         </view>
+        <view class="chip" wx:if="{{item.regionText}}">
+          <view class="i-lucide-map-pin text-primary"></view>
+          <text>{{item.regionText}}</text>
+        </view>
         <view class="chip" wx:if="{{item.createdAt}}">
           <view class="i-lucide-clock text-primary"></view>
           <text>{{item.createdAt}}</text>

@@ -32,6 +32,10 @@ module.exports = {
 
   getAgents: (params) => request.get('/user/agents', params),
 
+  getProvinces: () => request.get('/region/provinces'),
+  getCities: (provinceId) => request.get(`/region/cities/${provinceId}`),
+  getDistricts: (cityId) => request.get(`/region/districts/${cityId}`),
+
   changePassword: (data) => request.put('/user/password', data),
   bindPhone: (data) => request.post('/user/bind-phone', data),
 }

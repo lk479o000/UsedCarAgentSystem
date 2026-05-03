@@ -1,7 +1,7 @@
 const dayjs = require('dayjs');
 
 /**
- * Format date to YYYY-MM-DD HH:MM:SS
+ * 格式化日期为 YYYY-MM-DD HH:MM:SS
  */
 const formatDate = (date) => {
   if (!date) return null;
@@ -9,7 +9,7 @@ const formatDate = (date) => {
 };
 
 /**
- * Convert snake_case keys to camelCase and extract dataValues from Sequelize instances
+ * 驼峰命名转换，例如：region_code 转换为 regionName
  */
 const snakeToCamel = (obj) => {
   if (Array.isArray(obj)) {

@@ -321,10 +321,52 @@ tar -xzf /root/ucar-www.tar.gz -C /data/ucar/www --strip-components=1 dist
 
 ### D. 重启服务（在服务器）
 
+> **核心机制**：`docker-compose` 已将 `/root/ucar/ucar-api/src` 挂载到容器的 `/app/src`，
+> 因此**后端代码更新后只需重启容器，不需要重新构建镜像**。
+> 只有 `package.json` 变更（新增依赖）时才需要重新 build。
+
+#### 场景一：仅更新后端代码（最常见）
+
+```bash
+cd /root/ucar/docker
+docker compose -f docker-compose.prod.2g.yml --env-file .env.prod restart api
+docker compose -f docker-compose.prod.2g.yml --env-file .env.prod ps
+```
+
+#### 场景二：仅更新前端（管理端）
+
+```bash
+# 前端是静态文件，直接替换 /data/ucar/www 即可，无需重启任何容器
+# Nginx 会自动读取新文件（:ro 挂载）
+```
+
+#### 场景三：后端新增了依赖（package.json 变更）
+
+```bash
+cd /root/ucar/docker
+docker compose -f docker-compose.prod.2g.yml --env-file .env.prod up -d --build api
+docker compose -f docker-compose.prod.2g.yml --env-file .env.prod ps
+```
+
+#### 场景四：首次部署 / 全量更新
+
 ```bash
 cd /root/ucar/docker
 docker compose -f docker-compose.prod.2g.yml --env-file .env.prod up -d --build
 docker compose -f docker-compose.prod.2g.yml --env-file .env.prod ps
+```
+
+#### 场景五：仅重启某个服务
+
+```bash
+# 只重启 API
+docker compose -f docker-compose.prod.2g.yml --env-file .env.prod restart api
+
+# 只重启 Nginx
+docker compose -f docker-compose.prod.2g.yml --env-file .env.prod restart nginx
+
+# 只重启 MySQL
+docker compose -f docker-compose.prod.2g.yml --env-file .env.prod restart mysql
 ```
 
 ### E. 快速校验（在服务器）

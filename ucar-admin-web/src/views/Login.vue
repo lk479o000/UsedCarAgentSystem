@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] relative overflow-hidden" tabindex="0" @keyup.enter="handleLogin">
+  <div class="h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] relative overflow-hidden" tabindex="0" @keyup.enter="handleLoginDebounced">
     <!-- 背景装饰 -->
     <div class="absolute inset-0 pointer-events-none">
       <div class="absolute w-[400px] h-[400px] rounded-full blur-[80px] opacity-40 bg-gradient-to-br from-primary to-primary-light -top-[100px] -right-[100px] animate-[float_8s_ease-in-out_infinite]" />
@@ -25,7 +25,6 @@
             placeholder="请输入账号"
             prefix-icon="i-lucide-user"
             size="lg"
-            @keyup.enter="handleLogin"
           />
           <UInput
             v-model="form.password"
@@ -33,7 +32,6 @@
             placeholder="请输入密码"
             prefix-icon="i-lucide-lock"
             size="lg"
-            @keyup.enter="handleLogin"
           />
           <div v-if="showCaptcha" class="flex gap-3">
             <UInput
@@ -42,7 +40,6 @@
               prefix-icon="i-lucide-key"
               size="lg"
               class="flex-1"
-              @keyup.enter="handleLogin"
             />
             <img
               :src="captchaImage"

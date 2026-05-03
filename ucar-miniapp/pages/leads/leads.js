@@ -42,6 +42,7 @@ Page({
 
   onLoad(options) {
     this._searchTimer = null
+    this._regionCache = { provinces: [], cities: {}, districts: {} }
     this.setData({ isSelectMode: options?.mode === 'select' })
     if (options && Object.prototype.hasOwnProperty.call(options, 'status')) {
       this.setData({ filterStatus: String(options.status ?? '') })
@@ -119,6 +120,8 @@ Page({
     if (this.data.loading) return
     this.setData({ loading: true })
 
+    await this.loadRegionCache()
+
     try {
       const agentKeyword = (this.data.agentKeyword || '').trim()
       const customerKeyword = (this.data.customerKeyword || '').trim()
@@ -153,6 +156,7 @@ Page({
         customerTypeClass: item.customerType === 0 ? 'info' : item.customerType === 1 ? 'warning' : 'primary',
         carText: `${item.carBrand || ''} ${item.carModel || ''}`.trim() || '—',
         agentName: item.agent?.username || item.agentUsername || '',
+        regionText: this.buildRegionTextSync(item),
         displayPhone: this.data.isAdmin
           ? item.customerPhone
           : item.customerPhone
@@ -270,5 +274,34 @@ Page({
       return
     }
     wx.navigateTo({ url: '/pages/leads/form' })
+  },
+
+  buildRegionTextSync(item) {
+    const cache = this._regionCache
+    const parts = []
+    if (item.provinceId && cache.provinces.length > 0) {
+      const province = cache.provinces.find((p) => p.id === item.provinceId)
+      if (province) parts.push(province.regionName)
+    }
+    if (item.cityId && cache.cities[item.provinceId]) {
+      const city = cache.cities[item.provinceId].find((c) => c.id === item.cityId)
+      if (city) parts.push(city.regionName)
+    }
+    if (item.districtId && cache.districts[item.cityId]) {
+      const district = cache.districts[item.cityId].find((d) => d.id === item.districtId)
+      if (district) parts.push(district.regionName)
+    }
+    return parts.join(' / ')
+  },
+
+  async loadRegionCache() {
+    try {
+      if (this._regionCache.provinces.length === 0) {
+        const res = await api.getProvinces()
+        this._regionCache.provinces = res.data || []
+      }
+    } catch (err) {
+      console.error('加载区域缓存失败:', err)
+    }
   },
 })

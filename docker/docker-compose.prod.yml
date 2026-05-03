@@ -45,6 +45,7 @@ services:
       LOG_DIR: /app/logs
     volumes:
       - /data/ucar/logs/api:/app/logs
+      - /root/ucar/ucar-api/src:/app/src
     depends_on:
       - mysql
     expose:

@@ -124,6 +124,21 @@ const Lead = sequelize.define(
       allowNull: false,
       field: 'car_model',
     },
+    provinceId: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      field: 'province_id',
+    },
+    cityId: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      field: 'city_id',
+    },
+    districtId: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      field: 'district_id',
+    },
     carPrice: {
       type: DataTypes.BIGINT,
       allowNull: true,
@@ -179,6 +194,9 @@ const Lead = sequelize.define(
     updatedAt: 'updated_at',
     indexes: [
       { fields: ['user_id'] },
+      { fields: ['province_id'] },
+      { fields: ['city_id'] },
+      { fields: ['district_id'] },
       { fields: ['status'] },
       { fields: ['customer_phone'] },
       { fields: ['created_at'] },
@@ -317,7 +335,7 @@ const OperationLog = sequelize.define(
     tableName: 'c_operation_log',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: false,
+    updatedAt: 'updated_at',
     indexes: [
       { fields: ['user_id'] },
       { fields: ['created_at'] },
@@ -493,6 +511,17 @@ const LeadImport = sequelize.define(
       type: DataTypes.STRING(500),
       allowNull: true,
     },
+    isDeleted: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      defaultValue: 0,
+      field: 'is_deleted',
+    },
+    deletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: 'deleted_at',
+    },
   },
   {
     tableName: 'c_lead_import',
@@ -504,6 +533,7 @@ const LeadImport = sequelize.define(
       { fields: ['customer_phone'] },
       { fields: ['import_status'] },
       { fields: ['customer_name', 'customer_phone'] },
+      { fields: ['is_deleted'] },
     ],
   }
 );
@@ -582,6 +612,146 @@ LeadFollowup.belongsTo(Lead, { foreignKey: 'lead_id', as: 'lead' });
 LeadFollowup.belongsTo(User, { foreignKey: 'operator_user_id', targetKey: 'userid', as: 'operator' });
 Lead.hasMany(LeadFollowup, { foreignKey: 'lead_id', as: 'followups' });
 
+// 区域表（省市区县三级）
+const Region = sequelize.define(
+  'Region',
+  {
+    id: {
+      type: DataTypes.BIGINT,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    parentId: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      defaultValue: 0,
+      field: 'parent_id',
+    },
+    regionCode: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      field: 'region_code',
+    },
+    regionName: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      field: 'region_name',
+    },
+    regionLevel: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      field: 'region_level',
+    },
+    fullName: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+      field: 'full_name',
+    },
+    sortOrder: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      field: 'sort_order',
+    },
+    status: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      defaultValue: 1,
+    },
+    isDeleted: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      defaultValue: 0,
+      field: 'is_deleted',
+    },
+    deletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: 'deleted_at',
+    },
+  },
+  {
+    tableName: 'c_region',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    indexes: [
+      { fields: ['parent_id'] },
+      { fields: ['region_code'] },
+      { fields: ['region_level'] },
+      { fields: ['status'] },
+      { fields: ['is_deleted'] },
+    ],
+  }
+);
+
+// 区域层级关系闭包表
+const RegionClosure = sequelize.define(
+  'RegionClosure',
+  {
+    id: {
+      type: DataTypes.BIGINT,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    regionId: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      field: 'region_id',
+    },
+    ancestorId: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      field: 'ancestor_id',
+    },
+    ancestorLevel: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      field: 'ancestor_level',
+    },
+    descendantLevel: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      field: 'descendant_level',
+    },
+    pathLength: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: 'path_length',
+    },
+    isDirect: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      defaultValue: 0,
+      field: 'is_direct',
+    },
+    isRootNode: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      defaultValue: 0,
+      field: 'is_root_node',
+    },
+    fullPath: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      field: 'full_path',
+    },
+  },
+  {
+    tableName: 'c_region_cl',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: false,
+    indexes: [
+      { fields: ['region_id', 'ancestor_id'] },
+      { fields: ['ancestor_level', 'region_id'] },
+      { fields: ['ancestor_id', 'path_length', 'region_id'] },
+      { fields: ['region_id', 'is_root_node'] },
+      { fields: ['region_id', 'path_length'] },
+    ],
+  }
+);
+
 module.exports = {
   sequelize,
   User,
@@ -591,4 +761,6 @@ module.exports = {
   Dict,
   LeadImport,
   LeadFollowup,
+  Region,
+  RegionClosure,
 };

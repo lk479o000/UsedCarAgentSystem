@@ -26,6 +26,12 @@ const routes = [
         meta: { title: '首页' },
       },
       {
+        path: 'analytics',
+        name: 'Analytics',
+        component: () => import('@/views/Analytics.vue'),
+        meta: { title: '数据大屏' },
+      },
+      {
         path: 'leads',
         name: 'Leads',
         component: () => import('@/views/Leads.vue'),
@@ -42,6 +48,12 @@ const routes = [
         name: 'Users',
         component: () => import('@/views/Users.vue'),
         meta: { title: '经纪人管理', requiresAdmin: true },
+      },
+      {
+        path: 'regions',
+        name: 'Regions',
+        component: () => import('@/views/Regions.vue'),
+        meta: { title: '区域管理', requiresAdmin: true },
       },
     ],
   },

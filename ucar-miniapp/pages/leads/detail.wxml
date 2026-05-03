@@ -22,6 +22,10 @@
         <view class="i-lucide-car text-primary"></view>
         <text>{{(lead.carBrand || '') + ' ' + (lead.carModel || '')}}</text>
       </view>
+      <view class="chip" wx:if="{{lead.regionText}}">
+        <view class="i-lucide-map-pin text-primary"></view>
+        <text>{{lead.regionText}}</text>
+      </view>
       <view class="chip" wx:if="{{lead.createdAt}}">
         <view class="i-lucide-calendar text-primary"></view>
         <text>{{lead.createdAt}}</text>
@@ -57,10 +61,10 @@
             <text class="text-sm text-red-500" bindtap="onDeleteFollowup" data-id="{{item.id}}">删除</text>
           </view>
         </view>
-        <view class="text-xs text-gray-400 mb-1">跟进时间：{{item.followUpTime}}</view>
-        <view class="text-sm text-gray-700 mb-1">{{item.content}}</view>
-        <view class="text-sm text-gray-600" wx:if="{{item.result}}">结果：{{item.result}}</view>
-        <view class="text-xs text-gray-400" wx:if="{{item.nextFollowUpTime}}">下次跟进：{{item.nextFollowUpTime}}</view>
+        <view class="text-xs text-gray-400 mb-1">跟进时间：{{item.followupTime}}</view>
+        <view class="text-sm text-gray-700 mb-1">{{item.followupContent}}</view>
+        <view class="text-sm text-gray-600" wx:if="{{item.followupResult}}">结果：{{item.followupResult}}</view>
+        <view class="text-xs text-gray-400" wx:if="{{item.nextFollowupTime}}">下次跟进：{{item.nextFollowupTime}}</view>
       </view>
     </view>
     <view wx:else class="text-center text-sm text-gray-400 py-6">暂无跟进记录</view>

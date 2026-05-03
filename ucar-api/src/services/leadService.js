@@ -35,6 +35,9 @@ const createLead = async (leadData, operatorUserId) => {
       customerType: leadData.customerType || 0,
       carBrand: leadData.carBrand,
       carModel: leadData.carModel,
+      provinceId: leadData.provinceId || null,
+      cityId: leadData.cityId || null,
+      districtId: leadData.districtId || null,
       notes: leadData.notes,
       userId: leadData.userId,
       status: LEAD_STATUS.PENDING,
@@ -184,6 +187,15 @@ const updateLeadStatus = async (id, updateData, operatorUserId) => {
     }
     if (updateData.userId !== undefined) {
       updateFields.userId = updateData.userId;
+    }
+    if (updateData.provinceId !== undefined) {
+      updateFields.provinceId = updateData.provinceId || null;
+    }
+    if (updateData.cityId !== undefined) {
+      updateFields.cityId = updateData.cityId || null;
+    }
+    if (updateData.districtId !== undefined) {
+      updateFields.districtId = updateData.districtId || null;
     }
 
     // 处理状态更新
