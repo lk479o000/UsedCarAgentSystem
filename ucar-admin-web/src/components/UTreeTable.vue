@@ -300,11 +300,11 @@ watch(() => props.data, () => {
 }
 
 .u-table-row:hover {
-  background-color: rgba(var(--color-primary-rgb), 0.06) !important;
+  background-color: #e0f2fe;
 }
 
 .u-table-row:hover .u-table-td {
-  background-color: transparent !important;
+  background-color: #e0f2fe !important;
 }
 
 .u-row-even .u-table-td:not([style*="position: sticky"]) {

@@ -37,7 +37,7 @@
 
       <!-- 表格 -->
       <ULoading :loading="loading">
-        <UTable :data="tableData" :columns="columns" @row-click="handleRowClick">
+        <UTable :data="tableData" :columns="columns" fixed-first-column @row-click="handleRowClick">
           <template #profit="{ row }">
             {{ row.profit }} 元
           </template>
