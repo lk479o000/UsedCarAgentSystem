@@ -1,6 +1,6 @@
 <template>
   <div class="region-management">
-    <UCard>
+    <UCard no-clip>
       <template #header>
         <div class="flex items-center justify-between w-full">
           <span class="font-semibold text-text-primary text-xl tracking-tight">区域管理</span>
@@ -64,11 +64,7 @@
             {{ formatDateTime(row.createdAt) }}
           </template>
           <template #action="{ row }">
-            <div class="flex gap-2">
-              <UButton type="primary" size="sm" @click.stop="handleView(row)">详情</UButton>
-              <UButton type="default" size="sm" @click.stop="handleEdit(row)">编辑</UButton>
-              <UButton type="danger" size="sm" @click.stop="handleDelete(row)">删除</UButton>
-            </div>
+            <UActionGroup :actions="getRegionActions(row)" />
           </template>
         </UTreeTable>
         <UTable
@@ -100,11 +96,7 @@
             {{ formatDateTime(row.createdAt) }}
           </template>
           <template #action="{ row }">
-            <div class="flex gap-2">
-              <UButton type="primary" size="sm" @click.stop="handleView(row)">详情</UButton>
-              <UButton type="default" size="sm" @click.stop="handleEdit(row)">编辑</UButton>
-              <UButton type="danger" size="sm" @click.stop="handleDelete(row)">删除</UButton>
-            </div>
+            <UActionGroup :actions="getRegionActions(row)" />
           </template>
         </UTable>
       </ULoading>
@@ -215,6 +207,7 @@ import UFormItem from '@/components/UFormItem.vue'
 import UInputNumber from '@/components/UInputNumber.vue'
 import ULoading from '@/components/ULoading.vue'
 import UConfirm from '@/components/UConfirm.vue'
+import UActionGroup from '@/components/UActionGroup.vue'
 
 const searchQuery = ref('')
 const levelFilter = ref('')
@@ -288,11 +281,19 @@ const columns = [
   { key: 'regionName', title: '区域名称', minWidth: '200px' },
   { key: 'regionCode', title: '区域编码', width: '120px' },
   { key: 'regionLevel', title: '区域级别', width: '120px' },
-  { key: 'sortOrder', title: '排序', width: '80px' },
-  { key: 'status', title: '状态', width: '80px' },
+  { key: 'sortOrder', title: '排序', width: '80px', align: 'center' },
+  { key: 'status', title: '状态', width: '80px', align: 'center' },
   { key: 'createdAt', title: '创建时间', width: '180px' },
-  { key: 'action', title: '操作', width: '200px' },
+  { key: 'action', title: '操作', width: '160px', fixed: 'right' },
 ]
+
+const getRegionActions = (row) => {
+  return [
+    { key: 'view', label: '详情', type: 'success', handler: () => handleView(row) },
+    { key: 'edit', label: '编辑', type: 'primary', handler: () => handleEdit(row) },
+    { key: 'delete', label: '删除', type: 'danger', handler: () => handleDelete(row) },
+  ]
+}
 
 const parentRegionOptions = computed(() => {
   const options = []

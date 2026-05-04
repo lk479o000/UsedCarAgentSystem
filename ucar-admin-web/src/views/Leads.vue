@@ -1,6 +1,6 @@
 <template>
   <div class="animate-fade-in">
-    <UCard>
+    <UCard no-clip>
       <template #header>
         <div class="flex items-center justify-between w-full">
           <span class="font-semibold text-text-primary text-xl tracking-tight">线索管理</span>
@@ -37,7 +37,7 @@
 
       <!-- 表格 -->
       <ULoading :loading="loading">
-        <UTable :data="tableData" :columns="columns" @row-click="handleRowClick">
+        <UTable :data="tableData" :columns="columns" fixed-first-column @row-click="handleRowClick">
           <template #status="{ row }">
             <UTag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</UTag>
           </template>
@@ -48,14 +48,7 @@
             {{ row.agent?.username || '-' }}
           </template>
           <template #action="{ row }">
-            <div class="flex gap-2">
-              <UButton v-if="userStore.isAdmin && row.status !== 4" type="default" size="sm" @click.stop="handleUpdateStatus(row)">更新状态</UButton>
-              <UButton v-if="userStore.isAdmin" type="primary" size="sm" @click.stop="showEditDialog(row)">编辑</UButton>
-              <UButton v-if="userStore.isAdmin" type="default" size="sm" @click.stop="handleFollowup(row)">跟进记录</UButton>
-              <UButton v-if="userStore.isAdmin && row.status === 4" type="primary" size="sm" @click.stop="handleReSettlement(row)">重新结算</UButton>
-              <UButton v-if="userStore.isAdmin && row.status !== 4" type="success" size="sm" @click.stop="handleSettlement(row)">结算</UButton>
-              <UButton v-if="userStore.isAdmin" type="danger" size="sm" @click.stop="handleDelete(row)">删除</UButton>
-            </div>
+            <UActionGroup :actions="getLeadActions(row)" />
           </template>
         </UTable>
       </ULoading>
@@ -428,6 +421,7 @@ import UFormItem from '@/components/UFormItem.vue'
 import UInputNumber from '@/components/UInputNumber.vue'
 import ULoading from '@/components/ULoading.vue'
 import UConfirm from '@/components/UConfirm.vue'
+import UActionGroup from '@/components/UActionGroup.vue'
 
 const userStore = useUserStore()
 const loading = ref(false)
@@ -568,21 +562,34 @@ const availableStatusOptions = computed(() => {
 
 const agentOptions = computed(() => agents.value.map((a) => ({ label: a.username, value: a.userid })))
 
+const getLeadActions = (row) => {
+  if (!userStore.isAdmin) return []
+  const actions = [
+    { key: 'edit', label: '编辑', type: 'primary', handler: () => showEditDialog(row) },
+    { key: 'status', label: '更新状态', type: 'default', handler: () => handleUpdateStatus(row), visible: row.status !== 4 },
+    { key: 'followup', label: '跟进记录', type: 'default', handler: () => handleFollowup(row) },
+    { key: 'settlement', label: '结算', type: 'success', handler: () => handleSettlement(row), visible: row.status !== 4 },
+    { key: 'reSettlement', label: '重新结算', type: 'primary', handler: () => handleReSettlement(row), visible: row.status === 4 },
+    { key: 'delete', label: '删除', type: 'danger', handler: () => handleDelete(row) },
+  ]
+  return actions.filter(a => a.visible !== false)
+}
+
 const columns = computed(() => {
   const baseColumns = [
-    { key: 'customerName', title: '客户姓名' },
-    { key: 'customerPhone', title: '客户电话' },
-    { key: 'customerType', title: '客户类型' },
-    { key: 'carBrand', title: '车辆品牌' },
-    { key: 'carModel', title: '车辆型号' },
-    { key: 'regionText', title: '所属区域' },
-    { key: 'status', title: '状态' },
-    { key: 'createdAt', title: '创建时间' },
+    { key: 'customerName', title: '客户姓名', width: '120px' },
+    { key: 'customerPhone', title: '客户电话', width: '130px' },
+    { key: 'customerType', title: '客户类型', width: '100px' },
+    { key: 'carBrand', title: '车辆品牌', width: '120px' },
+    { key: 'carModel', title: '车辆型号', width: '150px' },
+    { key: 'regionText', title: '所属区域', width: '120px' },
+    { key: 'status', title: '状态', width: '100px', align: 'center' },
+    { key: 'createdAt', title: '创建时间', width: '180px' },
   ]
   
   if (userStore.isAdmin) {
-    baseColumns.splice(6, 0, { key: 'agent', title: '归属经纪人' })
-    baseColumns.push({ key: 'action', title: '操作', width: '250px' })
+    baseColumns.splice(6, 0, { key: 'agent', title: '归属经纪人', width: '120px' })
+    baseColumns.push({ key: 'action', title: '操作', width: '180px', fixed: 'right' })
   }
   
   return baseColumns
@@ -593,8 +600,8 @@ const leadColumns = [
   { key: 'customerPhone', title: '客户电话' },
   { key: 'carBrand', title: '车辆品牌' },
   { key: 'carModel', title: '车辆型号' },
-  { key: 'status', title: '状态' },
-  { key: 'action', title: '操作', width: '100px' },
+  { key: 'status', title: '状态', align: 'center' },
+  { key: 'action', title: '操作', width: '100px', align: 'center', fixed: 'right' },
 ]
 
 const loadData = async () => {
@@ -646,6 +653,12 @@ const showAddDialog = async () => {
   cityList.value = []
   districtList.value = []
   await loadProvinces()
+  const defaultProvinceId = 22
+  const defaultCityId = 1930
+  form.provinceId = defaultProvinceId
+  await loadCities(defaultProvinceId, false)
+  form.cityId = defaultCityId
+  await loadDistricts(defaultCityId, false)
   dialogVisible.value = true
 }
 
@@ -984,8 +997,8 @@ const loadAgents = async () => {
 // 跟进记录相关方法
 const handleFollowup = async (row) => {
   currentRow.value = row
-  await loadFollowupList(row.id)
   followupDialogVisible.value = true
+  await loadFollowupList(row.id)
 }
 
 const loadFollowupList = async (leadId) => {

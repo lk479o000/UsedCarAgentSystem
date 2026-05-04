@@ -1,6 +1,6 @@
 <template>
   <div class="animate-fade-in">
-    <UCard>
+    <UCard no-clip>
       <template #header>
         <div class="flex items-center justify-between w-full">
           <span class="font-semibold text-text-primary text-xl tracking-tight">经纪人管理</span>
@@ -33,21 +33,7 @@
             </UTag>
           </template>
           <template #action="{ row }">
-            <div class="flex gap-2">
-              <UButton
-                :type="row.status === 1 ? 'danger' : 'success'"
-                size="sm"
-                @click.stop="handleToggleStatus(row)"
-              >
-                {{ row.status === 1 ? '禁用' : '启用' }}
-              </UButton>
-              <UButton type="primary" size="sm" @click.stop="showEditDialog(row)">
-                编辑
-              </UButton>
-              <UButton type="default" size="sm" @click.stop="handleResetPassword(row)">
-                重置密码
-              </UButton>
-            </div>
+            <UActionGroup :actions="getUserActions(row)" />
           </template>
         </UTable>
       </ULoading>
@@ -207,6 +193,7 @@ import UForm from '@/components/UForm.vue'
 import UFormItem from '@/components/UFormItem.vue'
 import ULoading from '@/components/ULoading.vue'
 import UConfirm from '@/components/UConfirm.vue'
+import UActionGroup from '@/components/UActionGroup.vue'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -256,10 +243,18 @@ const columns = [
   { key: 'userid', title: '账号', width: '120px' },
   { key: 'username', title: '姓名', width: '100px' },
   { key: 'phone', title: '手机号', width: '130px' },
-  { key: 'status', title: '状态', width: '80px' },
+  { key: 'status', title: '状态', width: '80px', align: 'center' },
   { key: 'createdAt', title: '创建时间', width: '180px' },
-  { key: 'action', title: '操作', width: '220px' },
+  { key: 'action', title: '操作', width: '180px', fixed: 'right' },
 ]
+
+const getUserActions = (row) => {
+  return [
+    { key: 'toggle', label: row.status === 1 ? '禁用' : '启用', type: row.status === 1 ? 'danger' : 'success', handler: () => handleToggleStatus(row) },
+    { key: 'edit', label: '编辑', type: 'primary', handler: () => showEditDialog(row) },
+    { key: 'resetPwd', label: '重置密码', type: 'default', handler: () => handleResetPassword(row) },
+  ]
+}
 
 const loadData = async () => {
   loading.value = true

@@ -68,10 +68,27 @@ Page({
     try {
       const res = await api.getProvinces()
       const provinces = res.data || []
+      const provinceNames = provinces.map((p) => p.regionName)
+      const defaultProvinceId = 22
+      const defaultCityId = 1930
+      const provinceIndex = provinces.findIndex((p) => p.id === defaultProvinceId)
       this.setData({
         provinces,
-        provinceNames: provinces.map((p) => p.regionName),
+        provinceNames,
+        provinceId: provinceIndex >= 0 ? defaultProvinceId : '',
+        provinceIndex: provinceIndex >= 0 ? provinceIndex : -1,
       })
+      if (provinceIndex >= 0) {
+        await this.loadCities(defaultProvinceId)
+        const cityIndex = this.data.cities.findIndex((c) => c.id === defaultCityId)
+        this.setData({
+          cityId: cityIndex >= 0 ? defaultCityId : '',
+          cityIndex: cityIndex >= 0 ? cityIndex : -1,
+        })
+        if (cityIndex >= 0) {
+          await this.loadDistricts(defaultCityId)
+        }
+      }
     } catch (err) {
       console.error('加载省份失败:', err)
     }

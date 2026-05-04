@@ -1,6 +1,6 @@
 <template>
   <div class="animate-fade-in">
-    <UCard>
+    <UCard no-clip>
       <template #header>
         <div class="flex items-center justify-between w-full">
           <span class="font-semibold text-text-primary text-xl tracking-tight">结算管理</span>
@@ -53,11 +53,7 @@
             {{ row.settledAt || '-' }}
           </template>
           <template #action="{ row }">
-            <div class="flex gap-2">
-              <UButton v-if="userStore.isAdmin" type="default" size="sm" @click.stop="handleUpdate(row)">更新状态</UButton>
-              <UButton v-if="userStore.isAdmin" type="warning" size="sm" @click.stop="handleNotify(row)">推送提醒</UButton>
-              <UButton v-if="userStore.isAdmin" type="primary" size="sm" @click.stop="showEditDialog(row)">编辑</UButton>
-            </div>
+            <UActionGroup :actions="getSettlementActions(row)" />
           </template>
         </UTable>
       </ULoading>
@@ -283,6 +279,7 @@ import UInputNumber from '@/components/UInputNumber.vue'
 import UDatePicker from '@/components/UDatePicker.vue'
 import URadioGroup from '@/components/URadioGroup.vue'
 import ULoading from '@/components/ULoading.vue'
+import UActionGroup from '@/components/UActionGroup.vue'
 
 const userStore = useUserStore()
 const loading = ref(false)
@@ -359,19 +356,28 @@ const leadStatusOptions = [
   { label: '已失败', value: 5 },
 ]
 
+const getSettlementActions = (row) => {
+  if (!userStore.isAdmin) return []
+  return [
+    { key: 'edit', label: '编辑', type: 'primary', handler: () => showEditDialog(row) },
+    { key: 'status', label: '更新状态', type: 'default', handler: () => handleUpdate(row) },
+    { key: 'notify', label: '推送提醒', type: 'warning', handler: () => handleNotify(row) },
+  ]
+}
+
 const columns = computed(() => {
   const baseColumns = [
-    { key: 'lead.customerName', title: '客户姓名' },
-    { key: 'lead.carBrand', title: '车辆品牌' },
-    { key: 'lead.carModel', title: '车辆型号' },
-    { key: 'profit', title: '利润金额' },
-    { key: 'agentShare', title: '经纪人分成' },
-    { key: 'status', title: '状态' },
-    { key: 'settledAt', title: '结算时间' },
+    { key: 'lead.customerName', title: '客户姓名', width: '120px' },
+    { key: 'lead.carBrand', title: '车辆品牌', width: '120px' },
+    { key: 'lead.carModel', title: '车辆型号', width: '150px' },
+    { key: 'profit', title: '利润金额', width: '120px', align: 'right' },
+    { key: 'agentShare', title: '经纪人分成', width: '120px', align: 'right' },
+    { key: 'status', title: '状态', width: '100px', align: 'center' },
+    { key: 'settledAt', title: '结算时间', width: '180px' },
   ]
   
   if (userStore.isAdmin) {
-    baseColumns.push({ key: 'action', title: '操作', width: '250px' })
+    baseColumns.push({ key: 'action', title: '操作', width: '160px', fixed: 'right' })
   }
   
   return baseColumns
@@ -382,8 +388,8 @@ const leadColumns = [
   { key: 'customerPhone', title: '客户电话' },
   { key: 'carBrand', title: '车辆品牌' },
   { key: 'carModel', title: '车辆型号' },
-  { key: 'status', title: '状态' },
-  { key: 'action', title: '操作', width: '100px' },
+  { key: 'status', title: '状态', align: 'center' },
+  { key: 'action', title: '操作', width: '100px', align: 'center', fixed: 'right' },
 ]
 
 const loadData = async () => {

@@ -262,6 +262,22 @@ const getAgentLeads = async (userId, filters, pagination) => {
       where.id = -1;
     }
   }
+  if (filters.provinceId) {
+    where.provinceId = filters.provinceId;
+  }
+  if (filters.cityId) {
+    where.cityId = filters.cityId;
+  }
+  if (filters.districtId) {
+    where.districtId = filters.districtId;
+  }
+  if (filters.regionIds && filters.regionIds.length > 0) {
+    where[Op.or] = [
+      { provinceId: { [Op.in]: filters.regionIds } },
+      { cityId: { [Op.in]: filters.regionIds } },
+      { districtId: { [Op.in]: filters.regionIds } },
+    ];
+  }
 
   const { count, rows } = await Lead.findAndCountAll({
     where,

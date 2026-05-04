@@ -35,6 +35,7 @@ module.exports = {
   getProvinces: () => request.get('/region/provinces'),
   getCities: (provinceId) => request.get(`/region/cities/${provinceId}`),
   getDistricts: (cityId) => request.get(`/region/districts/${cityId}`),
+  getRegionDescendants: (ancestorId) => request.get(`/region/descendants/${ancestorId}`),
 
   changePassword: (data) => request.put('/user/password', data),
   bindPhone: (data) => request.post('/user/bind-phone', data),

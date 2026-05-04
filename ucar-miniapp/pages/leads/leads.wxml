@@ -3,34 +3,52 @@
   <view class="aura-content">
   <guest-tip wx:if="{{isGuest}}" tip-text="登录后可查看线索列表与详情" />
 
-  <!-- 筛选栏 - 折叠面板 -->
-  <view class="filter-panel card-glass">
-    <view class="filter-head" bindtap="toggleFilterPanel">
-      <view class="filter-head-left">
-        <view class="i-lucide-sliders-horizontal filter-head-icon"></view>
-        <text class="filter-head-title">状态筛选</text>
-      </view>
-      <view class="filter-head-right">
-        <view class="filter-current">{{currentStatusLabel}}</view>
-        <view class="i-lucide-chevron-down filter-head-arrow {{showFilterPanel ? 'up' : ''}}"></view>
-      </view>
-    </view>
-    <view class="filter-body" wx:if="{{showFilterPanel}}">
+  <!-- 主次分组Tab -->
+  <view class="lead-filter-bar card-glass">
+    <view class="lead-filter-list">
       <view
-        class="filter-chip {{filterStatus === item.value ? 'active' : ''}}"
-        wx:for="{{statusOptions}}"
+        class="lead-filter-item {{filterStatus === item.value ? 'active' : ''}}"
+        wx:for="{{coreTabs}}"
         wx:key="value"
         bindtap="changeFilter"
         data-status="{{item.value}}"
       >
         {{item.label}}
       </view>
+      <view class="lead-filter-item more {{showMoreDropdown ? 'active' : ''}}" bindtap="toggleMoreDropdown">
+        <text>更多</text>
+        <view class="i-lucide-chevron-down tab-more-icon {{showMoreDropdown ? 'up' : ''}}"></view>
+      </view>
+    </view>
+    <!-- 更多下拉面板 -->
+    <view class="more-dropdown" wx:if="{{showMoreDropdown}}">
+      <view class="more-dropdown-mask" bindtap="closeMoreDropdown"></view>
+      <view class="more-dropdown-panel card-glass">
+        <view
+          class="dropdown-item {{filterStatus === '' ? 'active' : ''}}"
+          bindtap="changeFilter"
+          data-status=""
+        >
+          全部({{statusCounts['0'] + statusCounts['1'] + statusCounts['2'] + statusCounts['3'] + statusCounts['4'] + statusCounts['5'] || 0}})
+        </view>
+        <view
+          class="dropdown-item {{filterStatus === item.value ? 'active' : ''}}"
+          wx:for="{{moreTabs}}"
+          wx:key="value"
+          bindtap="changeFilter"
+          data-status="{{item.value}}"
+        >
+          {{item.label}}({{statusCounts[item.value] || 0}})
+        </view>
+      </view>
     </view>
   </view>
 
-  <!-- 筛选框区域 -->
+  <!-- 筛选区域：管理员有经纪人+客户筛选，经纪人只有客户筛选 -->
   <view class="search-section card-glass">
+    <!-- 管理员：两个筛选框 -->
     <view wx:if="{{isAdmin}}">
+      <!-- 经纪人筛选框 -->
       <view class="search-item">
         <view class="search-label">经纪人</view>
         <view class="search-input-wrap">
@@ -46,27 +64,65 @@
           <view class="i-lucide-x search-clear-small" wx:if="{{agentKeyword}}" bindtap="onClearAgentKeyword"></view>
         </view>
       </view>
+      
+      <!-- 客户筛选框 -->
+      <view class="search-item">
+        <view class="search-label">客户</view>
+        <view class="search-input-wrap">
+          <view class="i-lucide-search search-icon-small"></view>
+          <input
+            class="search-input-small"
+            placeholder="姓名/手机号"
+            value="{{customerKeyword}}"
+            bindinput="onCustomerKeywordInput"
+            bindconfirm="onSearch"
+            confirm-type="search"
+          />
+          <view class="i-lucide-x search-clear-small" wx:if="{{customerKeyword}}" bindtap="onClearCustomerKeyword"></view>
+        </view>
+      </view>
     </view>
-    <view class="search-item">
-      <view class="search-label">客户</view>
+    
+    <!-- 经纪人：只有客户筛选框 -->
+    <view wx:else>
+      <view class="search-item">
+        <view class="search-label">客户</view>
+        <view class="search-input-wrap">
+          <view class="i-lucide-search search-icon-small"></view>
+          <input
+            class="search-input-small"
+            placeholder="姓名/手机号"
+            value="{{customerKeyword}}"
+            bindinput="onCustomerKeywordInput"
+            bindconfirm="onSearch"
+            confirm-type="search"
+          />
+          <view class="i-lucide-x search-clear-small" wx:if="{{customerKeyword}}" bindtap="onClearCustomerKeyword"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 区域筛选：文本输入+闭包表查询 -->
+    <view class="search-item" wx:if="{{isAdmin}}">
+      <view class="search-label">区域</view>
       <view class="search-input-wrap">
-        <view class="i-lucide-search search-icon-small"></view>
+        <view class="i-lucide-map-pin search-icon-small"></view>
         <input
           class="search-input-small"
-          placeholder="姓名/手机号"
-          value="{{customerKeyword}}"
-          bindinput="onCustomerKeywordInput"
+          placeholder="输入区域名称查询"
+          value="{{regionKeyword}}"
+          bindinput="onRegionKeywordInput"
           bindconfirm="onSearch"
           confirm-type="search"
         />
-        <view class="i-lucide-x search-clear-small" wx:if="{{customerKeyword}}" bindtap="onClearCustomerKeyword"></view>
+        <view class="i-lucide-x search-clear-small" wx:if="{{regionKeyword}}" bindtap="onClearRegionKeyword"></view>
       </view>
     </view>
   </view>
 
   <!-- 线索列表 -->
   <view class="lead-list" wx:if="{{list.length > 0}}">
-    <view class="card-glass list-card lead-card" wx:for="{{list}}" wx:key="id" bindtap="onCardTap" data-id="{{item.id}}">
+    <view class="card-glass list-card lead-card {{item.isOverdue ? 'overdue' : ''}}" wx:for="{{list}}" wx:key="id" bindtap="onCardTap" data-id="{{item.id}}">
       <view class="flex justify-between items-start">
         <view class="flex flex-col gap-2">
           <view class="flex items-center gap-2">
@@ -93,6 +149,16 @@
           <text>{{item.createdAt}}</text>
         </view>
       </view>
+
+      <!-- 跟进摘要 -->
+      <view class="followup-summary {{item.isOverdue ? 'text-danger' : 'text-secondary'}}" wx:if="{{item.lastFollowupContent}}">
+        <view class="i-lucide-file-text icon-sm"></view>
+        <text class="summary-text">{{item.lastFollowupContent}}</text>
+      </view>
+      <view class="followup-summary text-danger" wx:if="{{item.isOverdue}}">
+        <view class="i-lucide-clock icon-sm"></view>
+        <text>下次跟进已超期</text>
+      </view>
     </view>
   </view>
 
@@ -100,7 +166,7 @@
   <view wx:if="{{!loading && list.length === 0}}" class="empty">
     <view class="i-lucide-inbox empty-icon"></view>
     <text wx:if="{{isGuest}}">登录后可查看线索</text>
-    <text wx:elif="{{agentKeyword || customerKeyword}}">未找到匹配结果</text>
+    <text wx:elif="{{agentKeyword || customerKeyword || regionKeyword}}">未找到匹配结果</text>
     <text wx:else>暂无线索</text>
   </view>
 

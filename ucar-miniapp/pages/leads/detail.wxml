@@ -1,9 +1,28 @@
 <view class="aura-page" wx:if="{{lead}}">
   <view class="aura-bg"></view>
-  <view class="aura-content with-actionbar">
-  <!-- 基本信息区域 -->
-  <view class="card-glass list-card mb-4">
-    <view class="flex justify-between items-start">
+
+  <!-- 自定义导航栏 -->
+  <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="custom-navbar-inner">
+      <view class="custom-navbar-left" bindtap="onGoBack">
+        <view class="i-lucide-arrow-left text-xl text-gray-700"></view>
+      </view>
+      <text class="custom-navbar-title">线索详情</text>
+      <view class="custom-navbar-right">
+        <view class="nav-status-btn" wx:if="{{isAdmin && lead.status !== 4 && lead.status !== 5}}" bindtap="onUpdateStatus">
+          <view class="i-lucide-refresh-cw text-sm"></view>
+          <text>状态</text>
+        </view>
+        <view class="nav-more-btn" wx:if="{{isAdmin}}" bindtap="showMoreActions">
+          <view class="i-lucide-more-vertical text-xl text-gray-500"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="aura-content" style="padding-top: {{navBarHeight}}px;">
+    <!-- 状态头部卡片 -->
+    <view class="card-glass status-header mb-4">
       <view class="flex flex-col gap-2">
         <text class="list-title">{{lead.customerName}}</text>
         <view class="flex items-center gap-2">
@@ -11,95 +30,154 @@
           <view class="tag-{{lead.statusType}}">{{lead.statusText}}</view>
         </view>
       </view>
-    </view>
 
-    <view class="list-meta">
-      <view class="chip">
-        <view class="i-lucide-phone text-primary"></view>
-        <text>{{lead.displayPhone}}</text>
+      <!-- 当前状态突出+可流转态 -->
+      <view class="status-current">
+        <text wx:if="{{lead.status === 4}}">✅ 已成交</text>
+        <text wx:elif="{{lead.status === 5}}">❌ 已失败</text>
+        <text wx:else>当前：{{lead.statusText}}</text>
       </view>
-      <view class="chip" wx:if="{{lead.carBrand || lead.carModel}}">
-        <view class="i-lucide-car text-primary"></view>
-        <text>{{(lead.carBrand || '') + ' ' + (lead.carModel || '')}}</text>
+      <view class="status-flow" wx:if="{{lead.flowText}}">
+        <text>可流转 → {{lead.flowText}}</text>
       </view>
-      <view class="chip" wx:if="{{lead.regionText}}">
-        <view class="i-lucide-map-pin text-primary"></view>
-        <text>{{lead.regionText}}</text>
+      <view class="status-flow" wx:if="{{lead.status === 4 && lead.carActualPrice}}">
+        <text>成交价：{{lead.carActualPrice}}万</text>
       </view>
-      <view class="chip" wx:if="{{lead.createdAt}}">
-        <view class="i-lucide-calendar text-primary"></view>
-        <text>{{lead.createdAt}}</text>
+      <view class="status-flow" wx:if="{{lead.status === 5 && lead.failReason}}">
+        <text>原因：{{lead.failReason}}</text>
       </view>
-      <view class="chip" wx:if="{{isAdmin}}">
-        <view class="i-lucide-user text-primary"></view>
-        <text>{{lead.agentName || '-'}}</text>
-      </view>
-    </view>
 
-    <view class="note-block">
-      <view class="note-title">备注</view>
-      <view class="note-text">{{lead.notes || '-'}}</view>
-    </view>
-  </view>
-
-  <!-- 跟进记录区域（仅管理员） -->
-  <view class="card-glass p-4 mb-4" wx:if="{{isAdmin}}">
-    <view class="flex justify-between items-center mb-4">
-      <text class="text-lg font-bold text-gray-800">跟进记录</text>
-      <view class="flex items-center gap-1 text-primary text-sm" bindtap="onAddFollowup">
-        <view class="i-lucide-plus text-sm"></view>
-        <text>新增</text>
+      <view class="list-meta mt-4">
+        <view class="chip" bindtap="onMakePhoneCall">
+          <view class="i-lucide-phone text-primary"></view>
+          <text>{{lead.displayPhone}}</text>
+        </view>
+        <view class="chip" wx:if="{{lead.carBrand || lead.carModel}}">
+          <view class="i-lucide-car text-primary"></view>
+          <text>{{(lead.carBrand || '') + ' ' + (lead.carModel || '')}}</text>
+        </view>
+        <view class="chip" wx:if="{{lead.regionText}}">
+          <view class="i-lucide-map-pin text-primary"></view>
+          <text>{{lead.regionText}}</text>
+        </view>
       </view>
     </view>
 
-    <view wx:if="{{followups.length > 0}}">
-      <view class="bg-gray-50 rounded-xl p-4 mb-3" wx:for="{{followups}}" wx:key="id">
-        <view class="flex justify-between items-center mb-2">
-          <text class="text-sm font-semibold text-gray-800">{{item.operatorName || '管理员'}}</text>
-          <view class="flex gap-3">
-            <text class="text-sm text-primary" bindtap="onEditFollowup" data-id="{{item.id}}">编辑</text>
-            <text class="text-sm text-red-500" bindtap="onDeleteFollowup" data-id="{{item.id}}">删除</text>
+    <!-- 快捷操作区：仅保留跟进主按钮 -->
+    <view class="action-group card-glass mb-4" wx:if="{{isAdmin}}">
+      <button class="action-btn ghost" bindtap="onAddFollowup">
+        <view class="i-lucide-plus"></view>
+        <text>跟进</text>
+      </button>
+    </view>
+
+    <!-- 经纪人：仅拨打 -->
+    <view class="action-group card-glass mb-4" wx:if="{{!isAdmin}}">
+      <button class="action-btn ghost" bindtap="onMakePhoneCall">
+        <view class="i-lucide-phone"></view>
+        <text>拨打电话</text>
+      </button>
+    </view>
+
+    <!-- 跟进时间轴 -->
+    <view class="card-glass p-4 mb-4">
+      <view class="flex justify-between items-center mb-4">
+        <text class="text-lg font-bold text-gray-800">跟进记录</text>
+      </view>
+
+      <view wx:if="{{displayFollowups.length > 0}}" class="timeline">
+        <view class="timeline-item" wx:for="{{displayFollowups}}" wx:key="id">
+          <view class="timeline-node">
+            <view class="timeline-dot {{index === 0 ? 'latest' : ''}}"></view>
+            <view class="timeline-line" wx:if="{{index < displayFollowups.length - 1}}"></view>
+          </view>
+          <view class="timeline-content">
+            <text class="timeline-time">{{item.displayTime}}</text>
+            <view class="timeline-card">
+              <view class="flex justify-between items-center mb-1">
+                <text class="text-sm font-semibold text-gray-800">{{item.operatorName || '管理员'}}</text>
+                <view class="i-lucide-edit-3 text-sm text-gray-400" wx:if="{{isAdmin}}" bindtap="onEditFollowup" data-id="{{item.id}}"></view>
+              </view>
+              <text class="text-sm text-gray-700">{{item.followupContent}}</text>
+              <view class="text-sm text-gray-600 mt-1" wx:if="{{item.followupResult}}">
+                结果：{{item.followupResult}}
+              </view>
+              <view class="text-xs mt-1 {{item.isOverdue ? 'text-danger' : 'text-gray-400'}}" wx:if="{{item.nextFollowupTime}}">
+                下次跟进：{{item.nextFollowupTime}}
+              </view>
+            </view>
           </view>
         </view>
-        <view class="text-xs text-gray-400 mb-1">跟进时间：{{item.followupTime}}</view>
-        <view class="text-sm text-gray-700 mb-1">{{item.followupContent}}</view>
-        <view class="text-sm text-gray-600" wx:if="{{item.followupResult}}">结果：{{item.followupResult}}</view>
-        <view class="text-xs text-gray-400" wx:if="{{item.nextFollowupTime}}">下次跟进：{{item.nextFollowupTime}}</view>
+
+        <view class="timeline-expand" wx:if="{{hasMoreFollowups}}" bindtap="toggleFollowupExpand">
+          <text class="text-sm text-primary">{{followupExpanded ? '收起' : '查看更早记录'}}</text>
+        </view>
+      </view>
+
+      <view wx:else class="timeline-empty">
+        <view class="timeline-empty-line"></view>
+        <view class="timeline-empty-dot"></view>
+        <text class="text-sm text-gray-400">暂无跟进记录</text>
       </view>
     </view>
-    <view wx:else class="text-center text-sm text-gray-400 py-6">暂无跟进记录</view>
+
+    <!-- 更多信息折叠区 -->
+    <view class="card-glass mb-4">
+      <view class="flex justify-between items-center p-4" bindtap="toggleMoreInfo">
+        <text class="font-semibold text-gray-800">更多信息</text>
+        <view class="i-lucide-chevron-down {{showMoreInfo ? 'up' : ''}} text-gray-400"></view>
+      </view>
+      <view wx:if="{{showMoreInfo}}" class="px-4 pb-4">
+        <view class="kv-row" wx:if="{{isAdmin}}">
+          <text class="kv-label">经纪人</text>
+          <text class="kv-value">{{lead.agentName || '-'}}</text>
+        </view>
+        <view class="kv-row">
+          <text class="kv-label">创建时间</text>
+          <text class="kv-value">{{lead.createdAt || '-'}}</text>
+        </view>
+        <view class="kv-row">
+          <text class="kv-label">备注</text>
+          <text class="kv-value">{{lead.notes || '-'}}</text>
+        </view>
+        <view class="kv-row" wx:if="{{lead.status === 5}}">
+          <text class="kv-label">失败原因</text>
+          <text class="kv-value">{{lead.failReason || '-'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部占位 -->
+    <view class="h-24"></view>
   </view>
 
-  <!-- 底部占位 -->
-  <view class="h-24" wx:if="{{isAdmin}}"></view>
-
-  <!-- 底部操作栏（仅管理员） -->
-  <view class="detail-actionbar-wrap" wx:if="{{isAdmin}}">
-    <view class="detail-actionbar card-glass">
-      <view class="detail-action" bindtap="onEdit">
-        <view class="detail-action-icon i-lucide-edit"></view>
-        <text class="detail-action-text">编辑</text>
+  <!-- 更多操作 ActionSheet -->
+  <view class="sheet-mask" wx:if="{{showMoreSheet}}" bindtap="closeMoreSheet"></view>
+  <view class="sheet-wrap" wx:if="{{showMoreSheet}}">
+    <view class="sheet card-glass" catchtap="noop">
+      <view class="sheet-title">更多操作</view>
+      <view class="sheet-list">
+        <view class="sheet-item" bindtap="onMoreAction" data-action="call">
+          <text class="sheet-item-text">📞 拨打电话</text>
+        </view>
+        <view class="sheet-item" bindtap="onMoreAction" data-action="edit">
+          <text class="sheet-item-text">✏️ 编辑线索</text>
+        </view>
+        <view class="sheet-item" bindtap="onMoreAction" data-action="settlement" wx:if="{{lead.status === 4 && !hasSettlement}}">
+          <text class="sheet-item-text">💰 结算</text>
+        </view>
+        <view class="sheet-item" bindtap="onMoreAction" data-action="reSettlement" wx:if="{{lead.status === 4 && hasSettlement}}">
+          <text class="sheet-item-text">💰 重新结算</text>
+        </view>
+        <view class="sheet-item" bindtap="onMoreAction" data-action="delete">
+          <text class="sheet-item-text text-danger">🗑️ 删除线索</text>
+        </view>
       </view>
-      <view class="detail-action primary" bindtap="onUpdateStatus" wx:if="{{lead.status !== 4 && lead.status !== 5}}">
-        <view class="detail-action-icon i-lucide-activity"></view>
-        <text class="detail-action-text">更新状态</text>
-      </view>
-      <view class="detail-action success" bindtap="onSettlement" wx:if="{{lead.status === 4 && !hasSettlement}}">
-        <view class="detail-action-icon i-lucide-wallet"></view>
-        <text class="detail-action-text">结算</text>
-      </view>
-      <view class="detail-action warning" bindtap="onReSettlement" wx:if="{{lead.status === 4 && hasSettlement}}">
-        <view class="detail-action-icon i-lucide-wallet"></view>
-        <text class="detail-action-text">重新结算</text>
-      </view>
-      <view class="detail-action danger" bindtap="onDelete">
-        <view class="detail-action-icon i-lucide-trash-2"></view>
-        <text class="detail-action-text">删除</text>
-      </view>
+      <view class="sheet-cancel" bindtap="closeMoreSheet">取消</view>
     </view>
   </view>
 
-  <!-- 更新状态 ActionSheet（玻璃拟态） -->
+  <!-- 更新状态 ActionSheet -->
   <view class="sheet-mask" wx:if="{{showStatusSheet}}" bindtap="closeStatusSheet"></view>
   <view class="sheet-wrap" wx:if="{{showStatusSheet}}">
     <view class="sheet card-glass" catchtap="noop">
@@ -113,7 +191,7 @@
     </view>
   </view>
 
-  <!-- 成交价格输入弹窗（玻璃拟态） -->
+  <!-- 成交价格输入弹窗 -->
   <view class="dialog-mask" wx:if="{{showDealInput}}" bindtap="closeDealInput"></view>
   <view class="dialog card-glass" wx:if="{{showDealInput}}" catchtap="noop">
     <view class="dialog-title">填写成交价格</view>
@@ -124,7 +202,7 @@
     </view>
   </view>
 
-  <!-- 失败原因输入弹窗（玻璃拟态） -->
+  <!-- 失败原因输入弹窗 -->
   <view class="dialog-mask" wx:if="{{showFailInput}}" bindtap="closeFailInput"></view>
   <view class="dialog card-glass" wx:if="{{showFailInput}}" catchtap="noop">
     <view class="dialog-title">填写失败原因</view>
@@ -133,7 +211,6 @@
       <button class="dialog-btn ghost" bindtap="closeFailInput">取消</button>
       <button class="dialog-btn primary" bindtap="onConfirmFail">确定</button>
     </view>
-  </view>
   </view>
 </view>
 

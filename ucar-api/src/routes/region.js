@@ -154,22 +154,6 @@ router.get('/search/all', authMiddleware, adminMiddleware, async (req, res) => {
 });
 
 /**
- * 根据ID查询区域
- * GET /api/v1/region/:id
- */
-router.get('/:id', authMiddleware, async (req, res) => {
-  try {
-    const result = await regionService.getRegionById(req.params.id);
-    if (result.code !== 0) {
-      return error(res, result.message, result.code);
-    }
-    success(res, result.data);
-  } catch (err) {
-    error(res, err.message, 4, 500);
-  }
-});
-
-/**
  * 获取下一个sort_order值
  * GET /api/v1/region/next-sort-order
  */
@@ -181,54 +165,6 @@ router.get('/next-sort-order', authMiddleware, adminMiddleware, async (req, res)
       return error(res, result.message, result.code);
     }
     success(res, result.data);
-  } catch (err) {
-    error(res, err.message, 4, 500);
-  }
-});
-
-/**
- * 创建区域
- * POST /api/v1/region
- */
-router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const result = await regionService.createRegion(req.body);
-    if (result.code !== 0) {
-      return error(res, result.message, result.code);
-    }
-    success(res, result.data, result.message);
-  } catch (err) {
-    error(res, err.message, 4, 500);
-  }
-});
-
-/**
- * 更新区域
- * PUT /api/v1/region/:id
- */
-router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const result = await regionService.updateRegion(req.params.id, req.body);
-    if (result.code !== 0) {
-      return error(res, result.message, result.code);
-    }
-    success(res, null, result.message);
-  } catch (err) {
-    error(res, err.message, 4, 500);
-  }
-});
-
-/**
- * 删除区域
- * DELETE /api/v1/region/:id
- */
-router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const result = await regionService.deleteRegion(req.params.id);
-    if (result.code !== 0) {
-      return error(res, result.message, result.code);
-    }
-    success(res, null, result.message);
   } catch (err) {
     error(res, err.message, 4, 500);
   }
@@ -264,6 +200,89 @@ router.put('/batch/status', authMiddleware, adminMiddleware, async (req, res) =>
 router.post('/closure/rebuild', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const result = await regionService.rebuildRegionClosureTable();
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, null, result.message);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
+/**
+ * 查询区域全部后代区域ID列表（简化接口，给小程序用）
+ * GET /api/v1/region/descendants/:ancestorId
+ */
+router.get('/descendants/:ancestorId', authMiddleware, async (req, res) => {
+  try {
+    const result = await regionService.getRegionAllDescendants(req.params.ancestorId);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    const descendants = result.data || [];
+    const ids = descendants.map((d) => d.regionId || d.id);
+    ids.push(parseInt(req.params.ancestorId));
+    success(res, [...new Set(ids)]);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
+/**
+ * 创建区域
+ * POST /api/v1/region
+ */
+router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const result = await regionService.createRegion(req.body);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, result.data, result.message);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
+/**
+ * 根据ID查询区域
+ * GET /api/v1/region/:id
+ */
+router.get('/:id', authMiddleware, async (req, res) => {
+  try {
+    const result = await regionService.getRegionById(req.params.id);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, result.data);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
+/**
+ * 更新区域
+ * PUT /api/v1/region/:id
+ */
+router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const result = await regionService.updateRegion(req.params.id, req.body);
+    if (result.code !== 0) {
+      return error(res, result.message, result.code);
+    }
+    success(res, null, result.message);
+  } catch (err) {
+    error(res, err.message, 4, 500);
+  }
+});
+
+/**
+ * 删除区域
+ * DELETE /api/v1/region/:id
+ */
+router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const result = await regionService.deleteRegion(req.params.id);
     if (result.code !== 0) {
       return error(res, result.message, result.code);
     }

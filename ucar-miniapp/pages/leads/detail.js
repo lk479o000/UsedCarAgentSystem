@@ -33,10 +33,27 @@ Page({
     dealPrice: '',
     failReason: '',
     hasSettlement: false,
+
+    showMoreSheet: false,
+
+    followupExpanded: false,
+    displayFollowups: [],
+    hasMoreFollowups: false,
+
+    showMoreInfo: false,
+
+    statusBarHeight: 0,
+    navBarHeight: 0,
   },
 
   onLoad(options) {
     if (!checkLogin({ redirect: true })) return
+    const sysInfo = wx.getSystemInfoSync()
+    const statusBarHeight = sysInfo.statusBarHeight || 20
+    this.setData({
+      statusBarHeight,
+      navBarHeight: statusBarHeight + 44,
+    })
     const userInfo = wx.getStorageSync('userInfo')
     if (userInfo) {
       const parsed = JSON.parse(userInfo)
@@ -72,10 +89,16 @@ Page({
 
       lead.regionText = await this.buildRegionText(lead.provinceId, lead.cityId, lead.districtId)
 
+      // 可流转状态提示
+      const transitions = STATUS_TRANSITIONS[lead.status] || []
+      lead.flowText = transitions.map((t) => t.label).join(' · ')
+
       this.setData({ lead })
 
+      // 经纪人也加载跟进记录（只读）
+      this.loadFollowups()
+
       if (this.data.isAdmin) {
-        this.loadFollowups()
         this.checkSettlement()
       }
     } catch (err) {
@@ -89,10 +112,65 @@ Page({
   async loadFollowups() {
     try {
       const res = await api.getFollowups(this.data.id)
-      this.setData({ followups: res.data || [] })
+      const followups = res.data || []
+      const formatted = followups.map((item) => ({
+        ...item,
+        displayTime: this.formatFollowupTime(item.followupTime),
+        isOverdue: item.nextFollowupTime ? new Date(item.nextFollowupTime) < new Date() : false,
+      }))
+
+      // 智能折叠：最多显示3条
+      const displayFollowups = formatted.slice(0, 3)
+      const hasMoreFollowups = formatted.length > 3
+
+      this.setData({
+        followups: formatted,
+        displayFollowups,
+        hasMoreFollowups,
+        followupExpanded: false,
+      })
     } catch (err) {
       console.error('加载跟进记录失败:', err)
     }
+  },
+
+  formatFollowupTime(timeStr) {
+    if (!timeStr) return ''
+    const date = new Date(timeStr)
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const yesterday = new Date(today.getTime() - 86400000)
+    const diffDays = Math.floor((today.getTime() - date.getTime()) / 86400000)
+
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const time = `${hours}:${minutes}`
+
+    if (date >= today) {
+      return `今天 ${time}`
+    }
+    if (date >= yesterday) {
+      return `昨天 ${time}`
+    }
+    if (diffDays < 7) {
+      return `${diffDays}天前`
+    }
+    if (date.getFullYear() === now.getFullYear()) {
+      return `${date.getMonth() + 1}/${date.getDate()} ${time}`
+    }
+    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+  },
+
+  toggleFollowupExpand() {
+    const expanded = !this.data.followupExpanded
+    this.setData({
+      followupExpanded: expanded,
+      displayFollowups: expanded ? this.data.followups : this.data.followups.slice(0, 3),
+    })
+  },
+
+  toggleMoreInfo() {
+    this.setData({ showMoreInfo: !this.data.showMoreInfo })
   },
 
   async checkSettlement() {
@@ -163,7 +241,7 @@ Page({
       wx.showToast({ title: '请输入成交价格', icon: 'none' })
       return
     }
-    this.doUpdateStatus(4, { dealPrice: this.data.dealPrice })
+    this.doUpdateStatus(4, { carActualPrice: this.data.dealPrice })
     this.setData({ showDealInput: false })
   },
 
@@ -225,6 +303,56 @@ Page({
         }
       },
     })
+  },
+
+  // 拨打电话
+  onMakePhoneCall() {
+    const lead = this.data.lead
+    if (!lead || !lead.customerPhone) {
+      wx.showToast({ title: '暂无电话号码', icon: 'none' })
+      return
+    }
+    wx.makePhoneCall({
+      phoneNumber: lead.customerPhone,
+      fail: () => {
+        wx.showToast({ title: '拨打失败', icon: 'none' })
+      },
+    })
+  },
+
+  onGoBack() {
+    wx.navigateBack({ delta: 1 })
+  },
+
+  // 更多菜单
+  showMoreActions() {
+    this.setData({ showMoreSheet: true })
+  },
+
+  closeMoreSheet() {
+    this.setData({ showMoreSheet: false })
+  },
+
+  onMoreAction(e) {
+    const action = e.currentTarget.dataset.action
+    this.setData({ showMoreSheet: false })
+    switch (action) {
+      case 'call':
+        this.onMakePhoneCall()
+        break
+      case 'edit':
+        this.onEdit()
+        break
+      case 'settlement':
+        this.onSettlement()
+        break
+      case 'reSettlement':
+        this.onReSettlement()
+        break
+      case 'delete':
+        this.onDelete()
+        break
+    }
   },
 
   closeStatusSheet() {

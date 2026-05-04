@@ -97,6 +97,22 @@ const getLeadList = async (filters, pagination) => {
         where.id = -1;
       }
     }
+    if (filters.provinceId) {
+      where.provinceId = filters.provinceId;
+    }
+    if (filters.cityId) {
+      where.cityId = filters.cityId;
+    }
+    if (filters.districtId) {
+      where.districtId = filters.districtId;
+    }
+    if (filters.regionIds && filters.regionIds.length > 0) {
+      where[Op.or] = [
+        { provinceId: { [Op.in]: filters.regionIds } },
+        { cityId: { [Op.in]: filters.regionIds } },
+        { districtId: { [Op.in]: filters.regionIds } },
+      ];
+    }
 
     const { count, rows } = await Lead.findAndCountAll({
       where,
@@ -153,7 +169,8 @@ const getLeadDetail = async (id) => {
       return { code: ERROR_CODES.NOT_FOUND, message: '线索不存在' };
     }
 
-    return { code: ERROR_CODES.SUCCESS, data: lead };
+    const formattedLead = snakeToCamel(lead);
+    return { code: ERROR_CODES.SUCCESS, data: formattedLead };
   } catch (err) {
     logger.error('查看线索详情异常:', err.message);
     return { code: ERROR_CODES.SYSTEM_ERROR, message: '系统错误' };
@@ -401,9 +418,7 @@ const getFollowupList = async (leadId) => {
 
     return {
       code: ERROR_CODES.SUCCESS,
-      data: {
-        list: formattedFollowups,
-      },
+      data: formattedFollowups,
     };
   } catch (err) {
     logger.error('查询跟进记录列表异常:', err.message);

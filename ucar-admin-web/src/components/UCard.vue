@@ -1,7 +1,8 @@
 <template>
   <div
     :class="[
-      'bg-surface rounded-lg shadow-md border border-border overflow-hidden relative transition-all duration-300',
+      'bg-surface rounded-lg shadow-md border border-border relative transition-all duration-300',
+      noClip ? 'overflow-visible' : 'overflow-hidden',
       { 'hover:shadow-lg hover:-translate-y-0.5': hover },
       { 'bg-white/95 backdrop-blur-xl shadow-lg border-white/30': glass },
     ]"
@@ -29,5 +30,7 @@ defineProps({
   hover: { type: Boolean, default: false },
   glass: { type: Boolean, default: false },
   bodyClass: { type: String, default: '' },
+  /** 为 true 时不裁切溢出，表格内 position:sticky 固定列才能相对横向滚动条生效 */
+  noClip: { type: Boolean, default: false },
 })
 </script>

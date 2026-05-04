@@ -31,18 +31,30 @@ Page({
     size: 20,
     hasMore: true,
     filterStatus: '',
-    agentKeyword: '',
-    customerKeyword: '',
     statusOptions: STATUS_OPTIONS,
     showFilterPanel: false,
     currentStatusLabel: '全部',
     isAdmin: false,
     isSelectMode: false,
+
+    // 经纪人筛选（管理员）
+    agentKeyword: '',
+    // 客户筛选
+    customerKeyword: '',
+    // 区域筛选（文本输入+闭包表查询）
+    regionKeyword: '',
+
+    // 主次分组Tab
+    coreTabs: [],
+    moreTabs: [],
+    showMoreDropdown: false,
+
+    // 跟进摘要
+    statusCounts: {},
   },
 
   onLoad(options) {
     this._searchTimer = null
-    this._regionCache = { provinces: [], cities: {}, districts: {} }
     this.setData({ isSelectMode: options?.mode === 'select' })
     if (options && Object.prototype.hasOwnProperty.call(options, 'status')) {
       this.setData({ filterStatus: String(options.status ?? '') })
@@ -120,21 +132,34 @@ Page({
     if (this.data.loading) return
     this.setData({ loading: true })
 
-    await this.loadRegionCache()
-
     try {
       const agentKeyword = (this.data.agentKeyword || '').trim()
       const customerKeyword = (this.data.customerKeyword || '').trim()
-      const keywordParams = {}
-      if (this.data.isAdmin && agentKeyword) {
-        Object.assign(keywordParams, /^\d{3,}$/.test(agentKeyword)
-          ? { agent_phone: agentKeyword }
-          : { agent_name: agentKeyword })
+      const regionKeyword = (this.data.regionKeyword || '').trim()
+
+      let keywordParams = {}
+
+      // 经纪人筛选（仅管理员）
+      if (agentKeyword && this.data.isAdmin) {
+        if (/^\d{3,}$/.test(agentKeyword)) {
+          keywordParams.agent_phone = agentKeyword
+        } else {
+          keywordParams.agent_name = agentKeyword
+        }
       }
+
+      // 客户筛选
       if (customerKeyword) {
-        Object.assign(keywordParams, /^\d{3,}$/.test(customerKeyword)
-          ? { customer_phone: customerKeyword }
-          : { customer_name: customerKeyword })
+        if (/^\d{3,}$/.test(customerKeyword)) {
+          keywordParams.customer_phone = customerKeyword
+        } else {
+          keywordParams.customer_name = customerKeyword
+        }
+      }
+
+      // 区域筛选（文本输入+闭包表查询）
+      if (regionKeyword && this.data.isAdmin) {
+        keywordParams.region_keyword = regionKeyword
       }
 
       const params = {
@@ -156,23 +181,60 @@ Page({
         customerTypeClass: item.customerType === 0 ? 'info' : item.customerType === 1 ? 'warning' : 'primary',
         carText: `${item.carBrand || ''} ${item.carModel || ''}`.trim() || '—',
         agentName: item.agent?.username || item.agentUsername || '',
-        regionText: this.buildRegionTextSync(item),
         displayPhone: this.data.isAdmin
           ? item.customerPhone
           : item.customerPhone
             ? item.customerPhone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
             : '',
+        lastFollowupContent: item.lastFollowupContent || '',
+        nextFollowupTime: item.nextFollowupTime || '',
+        isOverdue: item.nextFollowupTime ? new Date(item.nextFollowupTime) < new Date() : false,
       }))
 
       const mergedList = this.data.page === 1 ? list : [...this.data.list, ...list]
       const hasMore = list.length === this.data.size
 
-      this.setData({ list: mergedList, hasMore })
+      // 计算状态数量用于Tab显示
+      const statusCounts = {}
+      if (this.data.page === 1 && this.data.isAdmin) {
+        STATUS_OPTIONS.forEach((opt) => {
+          if (opt.value !== '') {
+            statusCounts[opt.value] = rawList.filter((item) => String(item.status) === opt.value).length
+          }
+        })
+      }
+
+      this.setData({ list: mergedList, hasMore, statusCounts })
+      this.computeCoreTabs(statusCounts)
     } catch (err) {
       console.error('加载线索失败:', err)
     } finally {
       this.setData({ loading: false })
     }
+  },
+
+  computeCoreTabs(statusCounts) {
+    const allTabs = STATUS_OPTIONS.filter((opt) => opt.value !== '')
+    const sortedTabs = allTabs
+      .map((opt) => ({ ...opt, count: statusCounts[opt.value] || 0 }))
+      .sort((a, b) => b.count - a.count)
+
+    // 取数量最多的2个非终态作为核心Tab
+    const nonFinalTabs = sortedTabs.filter((t) => t.value !== '4' && t.value !== '5')
+    const coreTabs = nonFinalTabs.slice(0, 2)
+    const moreTabs = STATUS_OPTIONS.filter((opt) => {
+      return !coreTabs.find((c) => c.value === opt.value) && opt.value !== ''
+    })
+
+    this.setData({ coreTabs, moreTabs })
+  },
+
+  toggleMoreDropdown() {
+    this.setData({ showMoreDropdown: !this.data.showMoreDropdown })
+  },
+
+  closeMoreDropdown() {
+    this.setData({ showMoreDropdown: false })
   },
 
   toggleFilterPanel() {
@@ -191,26 +253,15 @@ Page({
       return
     }
     const filterStatus = e.currentTarget.dataset.status
-    this.setData({ filterStatus, page: 1, hasMore: true, showFilterPanel: false })
+    this.setData({ filterStatus, page: 1, hasMore: true, showFilterPanel: false, showMoreDropdown: false })
     this.updateCurrentStatusLabel(filterStatus)
     this.loadData()
   },
 
+  // 经纪人筛选输入
   onAgentKeywordInput(e) {
     const v = e.detail.value
     this.setData({ agentKeyword: v })
-    if (!checkLogin()) return
-
-    if (this._searchTimer) clearTimeout(this._searchTimer)
-    this._searchTimer = setTimeout(() => {
-      this.setData({ page: 1, hasMore: true })
-      this.loadData()
-    }, 300)
-  },
-
-  onCustomerKeywordInput(e) {
-    const v = e.detail.value
-    this.setData({ customerKeyword: v })
     if (!checkLogin()) return
 
     if (this._searchTimer) clearTimeout(this._searchTimer)
@@ -226,8 +277,40 @@ Page({
     this.loadData()
   },
 
+  // 客户筛选输入
+  onCustomerKeywordInput(e) {
+    const v = e.detail.value
+    this.setData({ customerKeyword: v })
+    if (!checkLogin()) return
+
+    if (this._searchTimer) clearTimeout(this._searchTimer)
+    this._searchTimer = setTimeout(() => {
+      this.setData({ page: 1, hasMore: true })
+      this.loadData()
+    }, 300)
+  },
+
   onClearCustomerKeyword() {
     this.setData({ customerKeyword: '', page: 1, hasMore: true })
+    if (!checkLogin()) return
+    this.loadData()
+  },
+
+  // 区域筛选输入
+  onRegionKeywordInput(e) {
+    const v = e.detail.value
+    this.setData({ regionKeyword: v })
+    if (!checkLogin()) return
+
+    if (this._searchTimer) clearTimeout(this._searchTimer)
+    this._searchTimer = setTimeout(() => {
+      this.setData({ page: 1, hasMore: true })
+      this.loadData()
+    }, 300)
+  },
+
+  onClearRegionKeyword() {
+    this.setData({ regionKeyword: '', page: 1, hasMore: true })
     if (!checkLogin()) return
     this.loadData()
   },
@@ -274,34 +357,5 @@ Page({
       return
     }
     wx.navigateTo({ url: '/pages/leads/form' })
-  },
-
-  buildRegionTextSync(item) {
-    const cache = this._regionCache
-    const parts = []
-    if (item.provinceId && cache.provinces.length > 0) {
-      const province = cache.provinces.find((p) => p.id === item.provinceId)
-      if (province) parts.push(province.regionName)
-    }
-    if (item.cityId && cache.cities[item.provinceId]) {
-      const city = cache.cities[item.provinceId].find((c) => c.id === item.cityId)
-      if (city) parts.push(city.regionName)
-    }
-    if (item.districtId && cache.districts[item.cityId]) {
-      const district = cache.districts[item.cityId].find((d) => d.id === item.districtId)
-      if (district) parts.push(district.regionName)
-    }
-    return parts.join(' / ')
-  },
-
-  async loadRegionCache() {
-    try {
-      if (this._regionCache.provinces.length === 0) {
-        const res = await api.getProvinces()
-        this._regionCache.provinces = res.data || []
-      }
-    } catch (err) {
-      console.error('加载区域缓存失败:', err)
-    }
   },
 })

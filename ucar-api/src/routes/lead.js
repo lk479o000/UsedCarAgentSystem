@@ -37,6 +37,10 @@ router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
       startDate: req.query.start_date,
       endDate: req.query.end_date,
       regionKeyword: req.query.region_keyword,
+      provinceId: req.query.province_id,
+      cityId: req.query.city_id,
+      districtId: req.query.district_id,
+      regionIds: req.query.region_ids ? req.query.region_ids.split(',').map(Number) : undefined,
     };
     const pagination = {
       page: parseInt(req.query.page) || 1,

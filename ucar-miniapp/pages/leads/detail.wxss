@@ -1,1 +1,104 @@
 page { background: transparent; }
+
+.status-header {
+  padding: 28rpx 26rpx;
+}
+
+.status-current {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-top: 16rpx;
+}
+
+.status-flow {
+  font-size: 24rpx;
+  color: var(--text-tertiary);
+  margin-top: 8rpx;
+}
+
+.timeline-expand {
+  text-align: center;
+  padding: 16rpx 0;
+}
+
+.i-lucide-chevron-down.up {
+  transform: rotate(180deg);
+}
+
+.custom-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px);
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.04);
+}
+
+.custom-navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 24rpx;
+}
+
+.custom-navbar-left {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.custom-navbar-left:active {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.custom-navbar-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--text-primary, #0F172A);
+}
+
+.custom-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.nav-status-btn {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 10rpx 20rpx;
+  border-radius: 28rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #0369A1;
+  background: rgba(14, 165, 233, 0.1);
+  transition: all 0.2s;
+}
+
+.nav-status-btn:active {
+  background: rgba(14, 165, 233, 0.18);
+  transform: scale(0.96);
+}
+
+.nav-more-btn {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.nav-more-btn:active {
+  background: rgba(0, 0, 0, 0.06);
+}
